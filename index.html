@@ -1,0 +1,1040 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BabyBet</title>
+<meta name="description" content="Apuesta la fecha de nacimiento y adivina el nombre de la bebé.">
+<meta property="og:title" content="BabyBet">
+<meta property="og:description" content="El casino oficial del baby shower: apuesta la fecha y adivina el nombre de la bebé.">
+<meta name="theme-color" content="#23091C">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23F5A8C3'/%3E%3Ccircle cx='32' cy='32' r='25' fill='none' stroke='%23FBEFE6' stroke-width='6' stroke-dasharray='9.8 9.8'/%3E%3Ccircle cx='32' cy='32' r='17' fill='%2323091C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Limelight&family=Pacifico&display=swap">
+<style>
+:root{
+  --bg:#23091C; --surface:#3A1230; --surface-2:#4A1A3E; --well:#2E0F27;
+  --line:#6E3A60; --line-strong:#A77B95;
+  --gold:#E9C46A; --gold-2:#B8913A; --pink:#F5A8C3; --pink-soft:#FCD9E5;
+  --cream:#FBEFE6; --muted:#D7B3C6; --plum:#7A1F55; --dim:#8E6A80; --ink:#23091C; --ink-soft:#6B4A5E;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--cream)}
+body{font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:100dvh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed}
+:focus-visible{outline:2px solid var(--pink-soft);outline-offset:3px}
+h1,h2,p{margin:0}
+[hidden]{display:none !important}
+
+.app{max-width:430px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom))}
+.screen{display:flex;flex-direction:column;gap:18px;min-height:calc(100vh - 44px);min-height:calc(100dvh - 44px)}
+.demo{margin:0 0 14px;padding:10px 14px;border-radius:12px;background:var(--well);border:1px dashed var(--line-strong);color:var(--muted);font-size:13px;line-height:1.4}
+.demo strong{color:var(--pink-soft)}
+
+/* Iconos */
+.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* Marquesina */
+.marquee{border:2px solid var(--gold);border-radius:22px;padding:14px 16px 16px;background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:10px}
+.bulbs{display:flex;justify-content:space-between;width:100%}
+.bulb{display:block;width:8px;height:8px;border-radius:50%;animation:1.2s ease-in-out infinite}
+.bulb--pink{background:var(--pink);animation-name:bulbPink}
+.bulb--gold{background:var(--gold);animation-name:bulbGold;animation-delay:-.6s}
+@keyframes bulbPink{0%,38%,100%{background:#F5A8C3;box-shadow:0 0 3px 1px #F5A8C3,0 0 12px 4px rgba(245,168,195,.55)}50%,88%{background:#5E2A4D;box-shadow:0 0 0 0 rgba(245,168,195,0)}}
+@keyframes bulbGold{0%,38%,100%{background:#E9C46A;box-shadow:0 0 3px 1px #E9C46A,0 0 12px 4px rgba(233,196,106,.55)}50%,88%{background:#5C4A2A;box-shadow:0 0 0 0 rgba(233,196,106,0)}}
+@media (prefers-reduced-motion:reduce){.bulb{animation:none}}
+.logo{display:flex;align-items:baseline;gap:4px;line-height:1.15;margin-top:4px;outline:none}
+.logo-baby{font-family:'Pacifico',cursive;font-weight:400;font-size:48px;color:var(--pink)}
+.logo-bet{font-family:'Limelight',serif;font-weight:400;font-size:54px;color:var(--gold);letter-spacing:1px}
+.marquee-sub{font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--pink-soft);text-align:center}
+.chips{display:flex;justify-content:center;gap:14px}
+@media (max-width:380px){.marquee-sub{font-size:11px;letter-spacing:1.5px}.logo-baby{font-size:42px}.logo-bet{font-size:48px}}
+.chip-edge{fill:none;stroke-width:6;stroke-dasharray:9.42 9.42}
+
+/* Tarjetas de juego */
+.games{display:flex;flex-direction:column;gap:10px}
+.game{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.game-ic{width:44px;height:44px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.game-ic--gold{background:var(--gold)} .game-ic--pink{background:var(--pink)}
+.game h2{font-size:16px;font-weight:700}
+.game p{margin-top:2px;font-size:13px;line-height:1.35;color:var(--muted)}
+
+/* Reglas */
+.rules{border-radius:16px;background:var(--well);border:1px solid var(--line)}
+.rules summary{list-style:none;cursor:pointer;min-height:48px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px;font-weight:700;color:var(--pink-soft);border-radius:16px}
+.rules summary::-webkit-details-marker{display:none}
+.rules summary .ic{transition:transform .2s}
+.rules[open] summary .ic{transform:rotate(180deg)}
+.rules ol{margin:0;padding:0 16px 16px 34px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.45;color:var(--muted)}
+.rules strong{color:var(--cream)}
+
+/* Formularios */
+.form{display:flex;flex-direction:column;gap:12px;flex:1}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:700;color:var(--pink-soft)}
+.input{height:50px;padding:0 16px;border-radius:12px;border:1px solid var(--line-strong);background:var(--well);color:var(--cream);font-size:16px;width:100%}
+.input::placeholder{color:#B892A8}
+.input:focus{outline:2px solid var(--gold);outline-offset:2px}
+.input--digits{letter-spacing:4px}
+.input--big{height:54px;font-size:18px}
+.hint{font-size:12px;line-height:1.4;color:var(--muted)}
+.form-error{font-size:14px;line-height:1.4;color:var(--pink);font-weight:700;min-height:0}
+.form-error:empty{display:none}
+.notice{padding:14px 16px;border-radius:16px;background:var(--well);border:1px solid var(--gold);color:var(--cream);font-size:14px;line-height:1.45}
+.notice strong{color:var(--gold)}
+
+/* Botones */
+.bottom{margin-top:auto;display:flex;flex-direction:column;gap:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;padding:0 20px;border-radius:999px;border:0;font-size:17px;font-weight:700;text-decoration:none;letter-spacing:.2px}
+.btn--gold{background:var(--gold);color:var(--ink)}
+.btn--pink{background:var(--pink);color:var(--ink)}
+.btn--ghost{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+.btn--link{min-height:44px;background:none;color:var(--pink-soft);font-size:15px;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.btn:disabled{opacity:.45}
+.btn[aria-busy="true"]{opacity:.8}
+.btn[aria-busy="true"]::before{content:"";width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fine{font-size:12px;line-height:1.45;color:var(--muted);text-align:center}
+
+/* Barra superior */
+.topbar{display:flex;align-items:center;justify-content:space-between;min-height:44px;gap:8px}
+.icon-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line-strong);background:transparent;color:var(--cream);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mini-logo{display:flex;align-items:baseline;gap:2px;line-height:1.2}
+.mini-logo span:first-child{font-family:'Pacifico',cursive;font-size:22px;color:var(--pink)}
+.mini-logo span:last-child{font-family:'Limelight',serif;font-size:24px;color:var(--gold)}
+.topbar-right{min-width:44px;display:flex;justify-content:flex-end}
+.step{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--pink-soft)}
+.pill-btn{min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-size:13px;font-weight:700;white-space:nowrap}
+.heading{display:flex;flex-direction:column;gap:6px}
+.heading h1{font-family:'Limelight',serif;font-weight:400;font-size:32px;line-height:1.1;color:var(--gold);outline:none}
+.heading p{font-size:14px;line-height:1.4;color:var(--muted)}
+.context{font-size:14px;color:var(--pink-soft);font-weight:700}
+
+/* Tablero */
+.tabs{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;padding:4px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.tab{height:44px;border:0;border-radius:999px;background:transparent;color:var(--pink-soft);font-size:14px;font-weight:700}
+.tab[aria-pressed="true"]{background:var(--pink);color:var(--ink)}
+.cal{display:flex;flex-direction:column;gap:8px}
+.grid7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.weekdays{text-align:center;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted)}
+.day-blank{display:block;height:48px}
+.day{height:48px;padding:0;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface);color:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.day-n{font-size:15px;font-weight:500;line-height:1}
+.day--sel{border:2px solid var(--pink);background:var(--surface-2);color:var(--pink-soft);box-shadow:0 0 14px rgba(245,168,195,.6)}
+.day--sel .day-n{font-weight:700}
+.day--full{border-color:var(--surface-2);background:var(--well);color:var(--dim)}
+.day--full .day-n{font-size:14px;text-decoration:line-through}
+.pills{display:flex;gap:3px}
+.pill{display:block;width:13px;height:6px;border-radius:3px}
+.pill--free{border:1px solid var(--gold)}
+.pill--taken{background:var(--gold)}
+.pill--mine{background:var(--pink)}
+.pill--legend{border:1px solid var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend .ampm{gap:4px}
+
+.bet-card{margin-top:auto;padding:14px 16px 16px;border-radius:18px;background:var(--surface);border:1px solid var(--gold);display:flex;flex-direction:column;gap:12px}
+.bet-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pink-soft)}
+.bet-prize{font-size:12px;color:var(--muted)}
+.bet-prize strong{color:var(--gold)}
+.bet-date{margin-top:2px;font-size:17px;font-weight:700}
+.bet-meta{font-size:12px;color:var(--muted);text-align:center}
+.turnos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.turno{height:50px;padding:0;border-radius:12px;border:1px solid var(--gold);background:transparent;color:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.turno b{font-size:15px;line-height:1}
+.turno small{font-size:11px;line-height:1;color:var(--muted)}
+.turno[aria-pressed="true"]{border:2px solid var(--pink-soft);background:var(--pink);color:var(--ink)}
+.turno[aria-pressed="true"] small{color:var(--surface-2)}
+.turno:disabled{border-color:var(--surface-2);background:var(--well);color:var(--dim)}
+.turno:disabled b{text-decoration:line-through}
+.turno:disabled small{color:var(--dim)}
+
+/* Tragamonedas */
+.slot{display:flex;align-items:center;gap:6px}
+.slot-box{flex:1;border:3px solid var(--gold);border-radius:24px;background:var(--surface);padding:12px 14px 16px;display:flex;flex-direction:column;gap:12px}
+.slot-title{text-align:center;font-family:'Limelight',serif;font-size:19px;letter-spacing:2px;color:var(--pink)}
+.reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.reel{height:96px;border-radius:12px;border:2px solid var(--gold-2);background:var(--cream);color:var(--plum);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.reel svg{transition:transform .3s}
+.slot.spin .reel svg{animation:reel .45s ease-in-out 3}
+.slot.spin .reel:nth-child(2) svg{animation-delay:.08s}
+.slot.spin .reel:nth-child(3) svg{animation-delay:.16s}
+@keyframes reel{0%{transform:translateY(0)}45%{transform:translateY(70px)}46%{transform:translateY(-70px)}100%{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){.slot.spin .reel svg{animation:none}}
+.seal{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:var(--well);border:1px dashed var(--line-strong);font-size:13px;line-height:1.45;color:var(--muted)}
+.seal strong{color:var(--cream)}
+.seal .ic{color:var(--gold)}
+
+/* Ficha */
+.ticket{position:relative;background:var(--cream);color:var(--ink);border-radius:20px;display:flex;flex-direction:column}
+.ticket-top{padding:18px 20px 14px;display:flex;flex-direction:column;gap:14px}
+.ticket-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ticket-brand{font-family:'Limelight',serif;font-size:20px;color:var(--plum)}
+.ticket-no{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink-soft)}
+.tk-row{display:flex;flex-direction:column;gap:2px}
+.tk-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-soft)}
+.tk-val{font-size:17px;font-weight:700;overflow-wrap:anywhere}
+.tk-val--plum{color:var(--plum);display:flex;align-items:center;gap:6px}
+.tk-val--big{font-size:20px}
+.perf{position:relative;height:24px;display:flex;align-items:center}
+.perf::before,.perf::after{content:"";position:absolute;top:0;width:24px;height:24px;border-radius:50%;background:var(--bg)}
+.perf::before{left:-12px}.perf::after{right:-12px}
+.perf span{flex:1;margin:0 20px;border-top:2px dashed #C9A9B9}
+.ticket-bottom{padding:12px 20px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.badge{padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.badge--pending{background:var(--pink);color:var(--ink)}
+.badge--paid{background:var(--gold);color:var(--ink)}
+.note{font-size:13px;line-height:1.4;color:var(--muted);text-align:center;margin-top:-6px}
+.pozo{padding:16px 18px;border-radius:18px;background:var(--surface);border:1px solid var(--gold);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pozo-main{display:flex;flex-direction:column;gap:6px}
+.pozo-n{font-family:'Limelight',serif;font-size:30px;line-height:1;color:var(--gold)}
+.pozo-sub{font-size:12px;color:var(--muted)}
+.pozo-side{font-size:13px;line-height:1.35;color:var(--muted);text-align:right}
+.mine{display:flex;flex-direction:column;gap:10px}
+.mine-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mine-head h2{font-size:16px;font-weight:700}
+.mine-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.mine-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.mine-no{font-size:12px;font-weight:700;color:var(--muted);min-width:44px}
+.mine-date{flex:1;font-size:15px;font-weight:700}
+
+/* Cartel con QR (?cartel) */
+.poster{max-width:640px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 20px 32px;display:flex;flex-direction:column;gap:16px}
+.poster-in{display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center}
+.poster .marquee{width:100%;padding:18px 20px 20px}
+.poster .logo-baby{font-size:clamp(48px,13vw,76px)}
+.poster .logo-bet{font-size:clamp(54px,14.5vw,86px)}
+.poster .marquee-sub{font-size:clamp(11px,2.6vw,15px)}
+.poster-cta{font-family:'Limelight',serif;font-size:clamp(26px,7vw,40px);line-height:1.1;color:var(--gold)}
+.qr-box{width:min(78vw,340px);aspect-ratio:1;padding:14px;border-radius:22px;background:#FFFFFF;border:4px solid var(--pink);box-shadow:0 0 0 4px var(--gold)}
+.qr-box svg{display:block;width:100%;height:100%}
+.qr-msg{display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink);font-size:14px;line-height:1.4;padding:12px}
+.poster-url{font-size:15px;color:var(--pink-soft);overflow-wrap:anywhere}
+.poster-games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
+.poster-game{padding:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:6px}
+.poster-game h2{font-size:16px;font-weight:700}
+.poster-game p{font-size:13px;line-height:1.4;color:var(--muted)}
+.poster-game strong{color:var(--gold)}
+.poster-fine{font-size:13px;line-height:1.45;color:var(--muted)}
+.poster-warn{padding:12px 14px;border-radius:12px;background:var(--well);border:1px dashed var(--pink);color:var(--pink-soft);font-size:13px;line-height:1.4}
+@media (max-width:380px){.poster-games{grid-template-columns:1fr}}
+@media print{
+  @page{margin:0}
+  html,body{background:#23091C;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .poster{max-width:none;height:100vh;padding:4vh 8vw;justify-content:center;overflow:hidden}
+  .poster-in{gap:2.6vh}
+  .qr-box{width:36vh;max-width:70vw}
+  .poster .bulb{animation:none}
+  .no-print{display:none !important}
+}
+
+/* Aviso flotante */
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,20px);width:min(390px,calc(100% - 32px));padding:14px 16px;border-radius:14px;background:var(--cream);color:var(--ink);font-size:14px;font-weight:700;line-height:1.4;box-shadow:0 10px 30px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:10}
+.toast--on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-bow" viewBox="0 0 24 24"><path d="M12 11.5C9.5 8 5 6.5 3.5 8.5S4.5 15 12 12.5"/><path d="M12 11.5C14.5 8 19 6.5 20.5 8.5S19.5 15 12 12.5"/><circle cx="12" cy="12" r="1.6"/><path d="M11 13.5L8.5 19.5M13 13.5L15.5 19.5"/></symbol>
+  <symbol id="i-pacifier" viewBox="0 0 24 24"><path d="M4 9C4 6.8 7.6 5.5 12 5.5S20 6.8 20 9S16.4 12.8 12 12.8S4 11.2 4 9Z"/><circle cx="12" cy="9.1" r="1.7"/><path d="M12 12.8V14.5"/><circle cx="12" cy="17.8" r="3.3"/></symbol>
+  <symbol id="i-bottle" viewBox="0 0 24 24"><path d="M10 5.5C10 3.5 11 2.5 12 2.5S14 3.5 14 5.5"/><rect x="8.5" y="5.5" width="7" height="3" rx="1"/><rect x="7.5" y="8.5" width="9" height="13" rx="2.5"/><path d="M7.5 12.5H10M7.5 15.5H10M7.5 18.5H10"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10H20.5M8 3V7M16 3V7"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2.2"/><path d="M8.5 11V8A3.5 3.5 0 0 1 15.5 8V11"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5L8 12L15 19"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9L12 15L18 9"/></symbol>
+</svg>
+
+<main class="app">
+  <p class="demo" id="demo" hidden><strong>Modo demo:</strong> todavía no hay planilla conectada, así que las apuestas se guardan solo en este dispositivo.</p>
+
+  <!-- 1 · Entrada -->
+  <section class="screen" id="s-entrada" aria-labelledby="t-entrada">
+    <div class="marquee">
+      <div class="bulbs" data-bulbs="13" aria-hidden="true"></div>
+      <h1 class="logo" id="t-entrada" tabindex="-1"><span class="logo-baby">Baby</span><span class="logo-bet">Bet</span></h1>
+      <p class="marquee-sub">Casino oficial del baby shower</p>
+      <div class="bulbs" data-bulbs="13" data-invert aria-hidden="true"></div>
+    </div>
+
+    <div class="chips" aria-hidden="true">
+      <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#F5A8C3"/><circle class="chip-edge" cx="30" cy="30" r="24" stroke="#FBEFE6"/><circle cx="30" cy="30" r="17" fill="#23091C"/><svg class="ic" x="18" y="18" width="24" height="24" style="color:#E9C46A"><use href="#i-bow"/></svg></svg>
+      <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#E9C46A"/><circle class="chip-edge" cx="30" cy="30" r="24" stroke="#23091C"/><circle cx="30" cy="30" r="17" fill="#FBEFE6"/><svg class="ic" x="18" y="18" width="24" height="24" style="color:#7A1F55"><use href="#i-pacifier"/></svg></svg>
+      <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#FBEFE6"/><circle class="chip-edge" cx="30" cy="30" r="24" stroke="#F5A8C3"/><circle cx="30" cy="30" r="17" fill="#3A1230"/><svg class="ic" x="18" y="18" width="24" height="24" style="color:#F5A8C3"><use href="#i-bottle"/></svg></svg>
+    </div>
+
+    <div class="notice" id="aviso-cerrada" hidden><strong>La mesa está cerrada.</strong> Ya no se reciben apuestas, pero puedes entrar a ver tus fichas.</div>
+
+    <div class="games">
+      <div class="game">
+        <div class="game-ic game-ic--gold"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-cal"/></svg></div>
+        <div>
+          <h2>Fecha de nacimiento</h2>
+          <p>Elige día y turno (AM o PM). Ficha de <span data-valor>$5.000</span>; quien acierte se lleva el <span data-pct>40</span>% del pozo.</p>
+        </div>
+      </div>
+      <div class="game">
+        <div class="game-ic game-ic--pink"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="#i-bow"/></svg></div>
+        <div>
+          <h2>Nombre de la bebé</h2>
+          <p>Gratis y una sola vez. Adivina cómo se llamará y gana un premio sorpresa.</p>
+        </div>
+      </div>
+    </div>
+
+    <details class="rules">
+      <summary>¿Cómo se gana? <svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-down"/></svg></summary>
+      <ol>
+        <li><strong>Fecha:</strong> gana la ficha exacta, día y turno. AM es de 00:00 a 11:59 y PM de 12:00 a 23:59.</li>
+        <li>Si nadie acierta, gana la más cercana. Primero el otro turno del mismo día; después, el turno más cercano de otro día.</li>
+        <li>Si dos fichas quedan igual de lejos, una antes y otra después, gana la más cercana a la hora exacta del nacimiento.</li>
+        <li>Solo participan las fichas pagadas. Quien gane se lleva el <span data-pct>40</span>% del pozo.</li>
+        <li><strong>Nombre:</strong> gana quien acierte. No importan tildes ni mayúsculas.</li>
+      </ol>
+    </details>
+
+    <form class="form" id="f-entrada" novalidate>
+      <div class="field">
+        <label for="in-nombre">Tu nombre</label>
+        <input class="input" id="in-nombre" type="text" autocomplete="name" autocapitalize="words" placeholder="Nombre y apellido" maxlength="60">
+      </div>
+      <div class="field">
+        <label for="in-cel">Últimos 4 dígitos de tu celular</label>
+        <input class="input input--digits" id="in-cel" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="0000" aria-describedby="h-cel">
+        <p class="hint" id="h-cel">Sirve para distinguir a dos personas con el mismo nombre.</p>
+      </div>
+      <p class="form-error" id="err-entrada" role="alert"></p>
+      <div class="bottom">
+        <button class="btn btn--gold" type="submit" id="b-entrar">Entrar a la mesa</button>
+        <p class="fine">Las fichas se pagan en efectivo a los anfitriones.<br>La casa siempre gana: se queda con el <span data-casa>60</span>%.</p>
+      </div>
+    </form>
+  </section>
+
+  <!-- 2 · Tablero de fechas -->
+  <section class="screen" id="s-fecha" aria-labelledby="t-fecha" hidden>
+    <header class="topbar">
+      <button class="icon-btn" type="button" data-go="entrada" aria-label="Volver"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <div class="mini-logo" aria-hidden="true"><span>Baby</span><span>Bet</span></div>
+      <div class="topbar-right" id="fecha-right"></div>
+    </header>
+    <div class="heading">
+      <h1 id="t-fecha" tabindex="-1">Elige tu fecha</h1>
+      <p>Cada día tiene dos fichas: AM y PM. Las doradas ya tienen dueño.</p>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="cal">
+      <div class="grid7 weekdays" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+      <div class="grid7" id="grid"></div>
+    </div>
+    <div class="legend">
+      <span class="ampm">AM <i class="pill pill--legend" aria-hidden="true"></i><i class="pill pill--legend" aria-hidden="true"></i> PM</span>
+      <span><i class="pill pill--free" aria-hidden="true"></i>Libre</span>
+      <span><i class="pill pill--taken" aria-hidden="true"></i>Tomado</span>
+      <span><i class="pill pill--mine" aria-hidden="true"></i>Tu ficha</span>
+    </div>
+    <div class="bet-card">
+      <div>
+        <div class="bet-head">
+          <span class="eyebrow">Tu ficha</span>
+          <span class="bet-prize">Si aciertas: <strong><span data-pct>40</span>% del pozo</strong></span>
+        </div>
+        <p class="bet-date" id="bet-date" aria-live="polite">Elige un día del tablero</p>
+      </div>
+      <div class="turnos" id="turnos"></div>
+      <button class="btn btn--gold" type="button" id="b-apostar">Apostar esta ficha</button>
+      <p class="bet-meta" id="bet-meta"></p>
+    </div>
+    <button class="btn btn--link" type="button" id="b-solo-nombre">Solo quiero adivinar el nombre</button>
+  </section>
+
+  <!-- 3 · Nombre -->
+  <section class="screen" id="s-nombre" aria-labelledby="t-nombre" hidden>
+    <header class="topbar">
+      <button class="icon-btn" type="button" data-go="fecha" aria-label="Volver"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <div class="mini-logo" aria-hidden="true"><span>Baby</span><span>Bet</span></div>
+      <div class="topbar-right"><span class="step" id="nombre-step">2 / 2</span></div>
+    </header>
+    <div class="heading">
+      <h1 id="t-nombre" tabindex="-1">¿Cómo se llamará?</h1>
+      <p>Gratis y una sola vez. Premio sorpresa para quien acierte.</p>
+    </div>
+    <p class="context" id="nombre-ctx" hidden></p>
+    <div class="slot" id="slot" aria-hidden="true">
+      <div class="slot-box">
+        <div class="bulbs" data-bulbs="11"></div>
+        <p class="slot-title">Jackpot de nombre</p>
+        <div class="reels">
+          <div class="reel"><svg class="ic" width="46" height="46"><use href="#i-bow"/></svg></div>
+          <div class="reel"><svg class="ic" width="46" height="46"><use href="#i-bottle"/></svg></div>
+          <div class="reel"><svg class="ic" width="46" height="46"><use href="#i-pacifier"/></svg></div>
+        </div>
+      </div>
+      <svg width="22" height="150" viewBox="0 0 22 150"><rect x="9" y="22" width="4" height="104" rx="2" fill="#B8913A"/><circle cx="11" cy="14" r="10" fill="#F5A8C3"/><rect x="2" y="122" width="18" height="16" rx="4" fill="#E9C46A"/></svg>
+    </div>
+    <form class="form" id="f-nombre" novalidate>
+      <div class="field">
+        <label for="in-bebe">Tu apuesta</label>
+        <input class="input input--big" id="in-bebe" type="text" autocomplete="off" autocapitalize="words" placeholder="Escribe un nombre" maxlength="40">
+      </div>
+      <div class="seal">
+        <svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-lock"/></svg>
+        <p><strong>Apuesta sellada.</strong> Nadie ve los nombres hasta la gran revelación.</p>
+      </div>
+      <p class="form-error" id="err-nombre" role="alert"></p>
+      <div class="bottom">
+        <button class="btn btn--pink" type="submit" id="b-sellar">Sellar apuesta</button>
+        <button class="btn btn--link" type="button" id="b-solo-fecha" hidden>Apostar solo la fecha, sin nombre</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 4 · Tu ficha -->
+  <section class="screen" id="s-ficha" aria-labelledby="t-ficha" hidden>
+    <header class="topbar">
+      <button class="icon-btn" type="button" data-go="entrada" aria-label="Volver al inicio"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <div class="mini-logo" aria-hidden="true"><span>Baby</span><span>Bet</span></div>
+      <div class="topbar-right"></div>
+    </header>
+    <div class="heading">
+      <h1 id="t-ficha" tabindex="-1">¡Ficha en juego!</h1>
+      <p id="ficha-sub">Muéstrales esta pantalla a los anfitriones cuando pagues.</p>
+    </div>
+
+    <article class="ticket" id="ticket" hidden>
+      <div class="ticket-top">
+        <div class="ticket-head"><span class="ticket-brand">BabyBet</span><span class="ticket-no" id="tk-no"></span></div>
+        <div class="tk-row"><span class="tk-label">Jugador</span><span class="tk-val" id="tk-jugador"></span></div>
+        <div class="tk-row"><span class="tk-label">Fecha y turno</span><span class="tk-val" id="tk-fecha"></span></div>
+        <div class="tk-row"><span class="tk-label">Nombre de la bebé</span><span class="tk-val tk-val--plum"><svg class="ic" width="18" height="18" aria-hidden="true" id="tk-lock"><use href="#i-lock"/></svg><span id="tk-nombre"></span></span></div>
+      </div>
+      <div class="perf" aria-hidden="true"><span></span></div>
+      <div class="ticket-bottom">
+        <div class="tk-row"><span class="tk-label">Valor de la ficha</span><span class="tk-val tk-val--big" id="tk-valor"></span></div>
+        <span class="badge badge--pending">Pendiente de pago</span>
+      </div>
+    </article>
+    <p class="note" id="ticket-note" hidden>Tu ficha se activa cuando los anfitriones confirmen el pago.</p>
+
+    <div class="seal" id="sealed-card" hidden>
+      <svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-lock"/></svg>
+      <p><strong>Tu nombre quedó sellado.</strong> Lo revelamos el día que nazca. ¡Suerte!</p>
+    </div>
+
+    <div class="pozo">
+      <div class="pozo-main">
+        <span class="eyebrow">Pozo acumulado</span>
+        <span class="pozo-n" id="pozo-n">$0</span>
+        <span class="pozo-sub" id="pozo-sub"></span>
+      </div>
+      <span class="pozo-side"><span data-pct>40</span>% para quien<br>acierte la fecha</span>
+    </div>
+
+    <section class="mine" id="mine" hidden aria-labelledby="t-mine">
+      <div class="mine-head">
+        <h2 id="t-mine">Mis fichas</h2>
+        <button class="pill-btn" type="button" id="b-refresh">Actualizar</button>
+      </div>
+      <ul class="mine-list" id="mine-list"></ul>
+    </section>
+
+    <div class="bottom">
+      <button class="btn btn--gold" type="button" id="b-otra">Apostar otra fecha</button>
+      <button class="btn btn--ghost" type="button" data-go="entrada">Volver al inicio</button>
+    </div>
+  </section>
+</main>
+
+<!-- Cartel con QR para imprimir o proyectar: abre la página con ?cartel al final -->
+<section class="poster" id="s-cartel" aria-labelledby="t-cartel" hidden>
+  <p class="poster-warn no-print" id="poster-warn" hidden>Ojo: esta página todavía no está conectada a la planilla (modo demo). Conéctala antes de imprimir el cartel.</p>
+  <div class="poster-in">
+    <div class="marquee">
+      <div class="bulbs" data-bulbs="15" aria-hidden="true"></div>
+      <h1 class="logo" id="t-cartel"><span class="logo-baby">Baby</span><span class="logo-bet">Bet</span></h1>
+      <p class="marquee-sub">Casino oficial del baby shower</p>
+      <div class="bulbs" data-bulbs="15" data-invert aria-hidden="true"></div>
+    </div>
+    <p class="poster-cta">Escanea y haz tu apuesta</p>
+    <div class="qr-box"><div id="qr" role="img" aria-label="Código QR para entrar a BabyBet" style="width:100%;height:100%"></div></div>
+    <p class="poster-url" id="poster-url"></p>
+    <div class="poster-games">
+      <div class="poster-game">
+        <h2>Fecha de nacimiento</h2>
+        <p>Ficha de <strong data-valor>$5.000</strong><br>quien acierte se lleva el <strong><span data-pct>40</span>% del pozo</strong></p>
+      </div>
+      <div class="poster-game">
+        <h2>Nombre de la bebé</h2>
+        <p>Gratis, una vez por persona<br><strong>premio sorpresa</strong></p>
+      </div>
+    </div>
+    <p class="poster-fine">Las fichas se pagan en efectivo a los anfitriones. La casa siempre gana.</p>
+  </div>
+  <button class="btn btn--gold no-print" type="button" id="b-print">Imprimir cartel</button>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* =================================================================
+ * CONFIGURACIÓN
+ * Pega aquí la URL de tu aplicación web de Apps Script (termina en /exec).
+ * Si la dejas vacía, la página funciona en "modo demo" (solo en este dispositivo).
+ * ================================================================= */
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/AKfycbw6mwKf5YgQeqJAFuEOXn18s7Pn-47FvltuqWtUsr3xb80hbks3KgTYeMhpYIyOtdJZ/exec',
+};
+
+/* ---------------- Utilidades ---------------- */
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const HORARIO = { AM: '00:00 – 11:59', PM: '12:00 – 23:59' };
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+const pad = (n) => String(n).padStart(2, '0');
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const clp = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n || 0);
+const normalizar = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+const parseISO = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+
+function fechaLarga(iso, conAnio) {
+  const d = parseISO(iso);
+  return `${cap(DIAS[d.getUTCDay()])} ${d.getUTCDate()} de ${MESES[d.getUTCMonth()]}${conAnio ? ' de ' + d.getUTCFullYear() : ''}`;
+}
+function fechaCorta(iso) {
+  const d = parseISO(iso);
+  return `${cap(DIAS[d.getUTCDay()].slice(0, 3))} ${d.getUTCDate()} ${MESES[d.getUTCMonth()].slice(0, 3)}`;
+}
+
+function el(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === false || v == null) continue;
+    if (k === 'class') node.className = v;
+    else if (k === 'text') node.textContent = v;
+    else if (k.startsWith('on')) node.addEventListener(k.slice(2), v);
+    else node.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of children) if (c != null) node.append(c);
+  return node;
+}
+
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* sin almacenamiento */ } },
+};
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('toast--on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('toast--on'), 4500);
+}
+
+function setBusy(btn, busy, label) {
+  if (!btn) return;
+  if (busy) {
+    btn.dataset.label = btn.textContent;
+    btn.textContent = label || 'Enviando…';
+    btn.setAttribute('aria-busy', 'true');
+    btn.disabled = true;
+  } else {
+    if (btn.dataset.label) btn.textContent = btn.dataset.label;
+    btn.removeAttribute('aria-busy');
+    btn.disabled = false;
+  }
+}
+
+/* ---------------- Conexión con la planilla ---------------- */
+async function http(url, opts) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 25000);
+  let res;
+  try {
+    res = await fetch(url, Object.assign({ redirect: 'follow', signal: ctrl.signal }, opts));
+  } catch (e) {
+    throw new Error(e.name === 'AbortError' ? 'La conexión está lenta. Intenta de nuevo.' : 'No pudimos conectar con la mesa. Revisa tu internet.');
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!res.ok) throw new Error('La mesa no respondió bien (' + res.status + '). Intenta de nuevo.');
+  try { return await res.json(); } catch (e) { throw new Error('La mesa respondió algo raro. Avísales a los anfitriones.'); }
+}
+
+const apiReal = {
+  tablero: () => http(CONFIG.API_URL + (CONFIG.API_URL.includes('?') ? '&' : '?') + 't=' + Date.now()),
+  // POST con text/plain para que Apps Script no exija permisos CORS adicionales.
+  jugador: (nombre, cel) => http(CONFIG.API_URL, { method: 'POST', body: JSON.stringify({ action: 'jugador', nombre, cel }) }),
+  apostar: (datos) => http(CONFIG.API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action: 'apostar' }, datos)) }),
+};
+
+// Imita al backend para probar la página sin planilla.
+const apiDemo = (() => {
+  const KEY = 'babybet-demo-v1';
+  const cfg = { abierto: true, valor: 5000, maxFichas: 3, desde: '2026-12-01', hasta: '2027-01-15', porcentaje: 40 };
+  const ejemplo = ['2026-12-18|AM', '2026-12-18|PM', '2026-12-20|PM', '2026-12-24|AM', '2026-12-24|PM', '2026-12-25|AM', '2026-12-28|AM', '2027-01-01|AM'];
+  const load = () => store.get(KEY) || {
+    contador: ejemplo.length,
+    fichas: ejemplo.map((s, i) => ({ numero: i + 1, clave: 'demo#0000', fecha: s.split('|')[0], turno: s.split('|')[1], pagada: i % 2 === 0 })),
+    nombres: [],
+  };
+  const save = (db) => store.set(KEY, db);
+  const tablero = (db) => {
+    const pagadas = db.fichas.filter((f) => f.pagada).length;
+    return Object.assign({ ok: true }, cfg, { tomadas: db.fichas.map((f) => f.fecha + '|' + f.turno), fichas: db.fichas.length, pagadas, pozo: pagadas * cfg.valor });
+  };
+  const estado = (db, clave) => ({
+    ok: true,
+    fichas: db.fichas.filter((f) => f.clave === clave).map(({ numero, fecha, turno, pagada }) => ({ numero, fecha, turno, pagada })),
+    nombreSellado: db.nombres.some((n) => n.clave === clave),
+    tablero: tablero(db),
+  });
+  const wait = (v) => new Promise((r) => setTimeout(() => r(v), 300));
+  const err = (error, code, extra) => wait(Object.assign({ ok: false, error, code: code || null }, extra || {}));
+  return {
+    tablero: () => wait(tablero(load())),
+    jugador: (nombre, cel) => wait(estado(load(), normalizar(nombre) + '#' + cel)),
+    apostar: (d) => {
+      const db = load();
+      const clave = normalizar(d.nombre) + '#' + d.cel;
+      const nombreBebe = String(d.nombreBebe || '').trim();
+      if (!d.fecha && !nombreBebe) return err('No hay nada que apostar todavía.');
+      if (d.fecha) {
+        if (db.fichas.filter((f) => f.clave === clave).length >= cfg.maxFichas) return err(`Ya tienes el máximo de ${cfg.maxFichas} fichas.`, 'max');
+        if (db.fichas.some((f) => f.fecha === d.fecha && f.turno === d.turno)) return err('Alguien tomó esa ficha hace un momento. Elige otra.', 'tomada', { tablero: tablero(db) });
+      }
+      const yaTiene = db.nombres.some((n) => n.clave === clave);
+      if (!d.fecha && yaTiene) return err('Tu nombre ya estaba sellado. Se adivina una sola vez.', 'nombre');
+      let ficha = null;
+      if (d.fecha) {
+        db.contador += 1;
+        ficha = { numero: db.contador, clave, fecha: d.fecha, turno: d.turno, pagada: false };
+        db.fichas.push(ficha);
+      }
+      const guardar = !!nombreBebe && !yaTiene;
+      if (guardar) db.nombres.push({ clave, nombre: nombreBebe });
+      save(db);
+      return wait(Object.assign(estado(db, clave), {
+        ficha: ficha && { numero: ficha.numero, fecha: ficha.fecha, turno: ficha.turno, pagada: false },
+        nombreGuardado: guardar,
+      }));
+    },
+  };
+})();
+
+const DEMO = !CONFIG.API_URL;
+const api = DEMO ? apiDemo : apiReal;
+
+/* ---------------- Estado ---------------- */
+const S = {
+  t: { abierto: true, valor: 5000, maxFichas: 3, desde: '2026-12-01', hasta: '2027-01-15', porcentaje: 40, tomadas: new Set(), fichas: 0, pagadas: 0, pozo: 0 },
+  jugador: null,        // { nombre, cel }
+  mis: [],              // fichas del jugador
+  nombreSellado: false,
+  mes: null,            // { y, m }
+  dia: null,            // 'AAAA-MM-DD'
+  turno: 'PM',
+  soloNombre: false,
+  ultima: null,         // última ficha creada
+  ultimoNombre: false,
+  pantalla: 'entrada',
+};
+
+function aplicarTablero(t) {
+  if (!t || !t.ok) return;
+  S.t = Object.assign({}, t, { tomadas: new Set(t.tomadas || []) });
+  $$('[data-valor]').forEach((n) => { n.textContent = clp(S.t.valor); });
+  $$('[data-pct]').forEach((n) => { n.textContent = S.t.porcentaje; });
+  $$('[data-casa]').forEach((n) => { n.textContent = 100 - S.t.porcentaje; });
+  $('#aviso-cerrada').hidden = S.t.abierto;
+}
+function aplicarJugador(r) {
+  S.mis = r.fichas || [];
+  S.nombreSellado = !!r.nombreSellado;
+  aplicarTablero(r.tablero);
+}
+const maxAlcanzado = () => S.t.maxFichas > 0 && S.mis.length >= S.t.maxFichas;
+const esMia = (iso, t) => S.mis.some((f) => f.fecha === iso && f.turno === t);
+function estadoTurno(iso, t) {
+  if (esMia(iso, t)) return 'mia';
+  if (S.t.tomadas.has(iso + '|' + t)) return 'tomada';
+  return 'libre';
+}
+
+/* ---------------- Navegación ---------------- */
+let pollTimer = null;
+function ir(pantalla) {
+  S.pantalla = pantalla;
+  ['entrada', 'fecha', 'nombre', 'ficha'].forEach((p) => { $('#s-' + p).hidden = p !== pantalla; });
+  if (pantalla === 'fecha') renderFecha();
+  if (pantalla === 'nombre') renderNombre();
+  if (pantalla === 'ficha') renderFicha();
+  window.scrollTo(0, 0);
+  const h = $('#t-' + pantalla);
+  if (h) h.focus({ preventScroll: true });
+
+  clearInterval(pollTimer);
+  if (pantalla === 'fecha') {
+    pollTimer = setInterval(async () => {
+      if (document.hidden || S.pantalla !== 'fecha') return;
+      try { aplicarTablero(await api.tablero()); renderFecha(); } catch (e) { /* reintenta en el próximo ciclo */ }
+    }, 45000);
+  }
+}
+
+$$('[data-go]').forEach((b) => b.addEventListener('click', () => ir(b.dataset.go)));
+
+/* ---------------- 1 · Entrada ---------------- */
+$$('[data-bulbs]').forEach((row) => {
+  const n = Number(row.dataset.bulbs);
+  const inv = row.hasAttribute('data-invert');
+  for (let i = 0; i < n; i++) {
+    const rosa = (i % 2 === 1) !== inv;
+    row.append(el('span', { class: 'bulb ' + (rosa ? 'bulb--pink' : 'bulb--gold') }));
+  }
+});
+
+$('#in-cel').addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); });
+['#in-nombre', '#in-cel'].forEach((s) => $(s).addEventListener('input', () => { $('#err-entrada').textContent = ''; }));
+$('#in-bebe').addEventListener('input', () => { $('#err-nombre').textContent = ''; });
+
+$('#f-entrada').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const nombre = $('#in-nombre').value.replace(/\s+/g, ' ').trim();
+  const cel = $('#in-cel').value.replace(/\D/g, '');
+  const err = $('#err-entrada');
+  err.textContent = '';
+  if (nombre.length < 2) { err.textContent = 'Escribe tu nombre.'; $('#in-nombre').focus(); return; }
+  if (cel.length !== 4) { err.textContent = 'Escribe los últimos 4 dígitos de tu celular.'; $('#in-cel').focus(); return; }
+
+  const btn = $('#b-entrar');
+  setBusy(btn, true, 'Abriendo la mesa…');
+  try {
+    const r = await api.jugador(nombre, cel);
+    if (!r.ok) { err.textContent = r.error; return; }
+    S.jugador = { nombre, cel };
+    store.set('babybet-jugador', S.jugador);
+    aplicarJugador(r);
+    S.ultima = null;
+    S.ultimoNombre = false;
+    if (!S.t.abierto || maxAlcanzado()) {
+      ir(S.mis.length ? 'ficha' : 'fecha');
+    } else {
+      ir('fecha');
+    }
+  } catch (ex) {
+    err.textContent = ex.message;
+  } finally {
+    setBusy(btn, false);
+  }
+});
+
+/* ---------------- 2 · Tablero ---------------- */
+function mesesDelRango() {
+  const a = parseISO(S.t.desde), b = parseISO(S.t.hasta);
+  const out = [];
+  let y = a.getUTCFullYear(), m = a.getUTCMonth();
+  while (y < b.getUTCFullYear() || (y === b.getUTCFullYear() && m <= b.getUTCMonth())) {
+    out.push({ y, m });
+    m += 1;
+    if (m > 11) { m = 0; y += 1; }
+  }
+  return out;
+}
+
+function validarSeleccion() {
+  if (!S.dia) return;
+  const libre = (t) => estadoTurno(S.dia, t) === 'libre';
+  if (!libre(S.turno)) {
+    const otro = S.turno === 'AM' ? 'PM' : 'AM';
+    if (libre(otro)) S.turno = otro; else S.dia = null;
+  }
+}
+
+function renderFecha() {
+  validarSeleccion();
+  const meses = mesesDelRango();
+  if (!S.mes || !meses.some((x) => x.y === S.mes.y && x.m === S.mes.m)) S.mes = meses[0];
+
+  // Arriba a la derecha: "Mis fichas" o el paso
+  const right = $('#fecha-right');
+  right.replaceChildren(
+    S.mis.length
+      ? el('button', { type: 'button', class: 'pill-btn', text: `Mis fichas (${S.mis.length})`, onclick: () => { S.ultima = null; S.ultimoNombre = false; ir('ficha'); } })
+      : el('span', { class: 'step', text: S.nombreSellado ? '' : '1 / 2' })
+  );
+
+  // Pestañas de meses
+  const corto = meses.length > 2;
+  $('#tabs').replaceChildren(...meses.map((x) => el('button', {
+    type: 'button',
+    class: 'tab',
+    'aria-pressed': String(x.y === S.mes.y && x.m === S.mes.m),
+    text: corto ? `${cap(MESES[x.m].slice(0, 3))} ${String(x.y).slice(2)}` : `${cap(MESES[x.m])} ${x.y}`,
+    onclick: () => { S.mes = x; renderFecha(); },
+  })));
+
+  // Calendario
+  const { y, m } = S.mes;
+  const grid = $('#grid');
+  const celdas = [];
+  const lead = (new Date(Date.UTC(y, m, 1)).getUTCDay() + 6) % 7;
+  for (let i = 0; i < lead; i++) celdas.push(el('span', { class: 'day-blank', 'aria-hidden': 'true' }));
+  const ultimo = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  for (let d = 1; d <= ultimo; d++) {
+    const iso = `${y}-${pad(m + 1)}-${pad(d)}`;
+    if (iso > S.t.hasta) break;
+    if (iso < S.t.desde) { celdas.push(el('span', { class: 'day-blank', 'aria-hidden': 'true' })); continue; }
+    const st = { AM: estadoTurno(iso, 'AM'), PM: estadoTurno(iso, 'PM') };
+    const lleno = st.AM !== 'libre' && st.PM !== 'libre';
+    const sel = !lleno && S.dia === iso;
+    const pill = (t) => {
+      let c = 'pill--free';
+      if (st[t] === 'mia' || (sel && S.turno === t)) c = 'pill--mine';
+      else if (st[t] === 'tomada') c = 'pill--taken';
+      return el('i', { class: 'pill ' + c });
+    };
+    const txt = (t) => (st[t] === 'mia' ? 'tuya' : st[t] === 'tomada' ? 'tomado' : 'libre');
+    celdas.push(el('button', {
+      type: 'button',
+      class: 'day' + (sel ? ' day--sel' : '') + (lleno ? ' day--full' : ''),
+      disabled: lleno || !S.t.abierto,
+      'aria-pressed': lleno ? null : String(sel),
+      'aria-label': `${fechaLarga(iso)}: AM ${txt('AM')}, PM ${txt('PM')}`,
+      onclick: () => {
+        S.dia = iso;
+        if (estadoTurno(iso, S.turno) !== 'libre') S.turno = S.turno === 'AM' ? 'PM' : 'AM';
+        renderFecha();
+      },
+    }, el('span', { class: 'day-n', text: String(d) }), el('span', { class: 'pills', 'aria-hidden': 'true' }, pill('AM'), pill('PM'))));
+  }
+  grid.replaceChildren(...celdas);
+
+  // Tarjeta de apuesta
+  const fecha = $('#bet-date');
+  const turnos = $('#turnos');
+  const btn = $('#b-apostar');
+  const meta = $('#bet-meta');
+  btn.textContent = `Apostar esta ficha · ${clp(S.t.valor)}`;
+
+  if (!S.t.abierto) {
+    fecha.textContent = 'La mesa está cerrada';
+    turnos.hidden = true;
+    btn.disabled = true;
+    meta.textContent = 'Ya no se reciben apuestas.';
+  } else if (maxAlcanzado()) {
+    fecha.textContent = `Ya tienes tus ${S.t.maxFichas} fichas`;
+    turnos.hidden = true;
+    btn.disabled = true;
+    meta.textContent = '¡Suerte! Mira el estado en "Mis fichas".';
+  } else {
+    fecha.textContent = S.dia ? `${fechaLarga(S.dia)} · ${S.turno}` : 'Elige un día del tablero';
+    turnos.hidden = false;
+    turnos.replaceChildren(...['AM', 'PM'].map((t) => {
+      const st = S.dia ? estadoTurno(S.dia, t) : 'libre';
+      const libre = st === 'libre';
+      return el('button', {
+        type: 'button',
+        class: 'turno',
+        disabled: !libre || !S.dia,
+        'aria-pressed': String(!!S.dia && libre && S.turno === t),
+        onclick: () => { S.turno = t; renderFecha(); },
+      }, el('b', { text: t }), el('small', { text: st === 'tomada' ? 'Tomado' : st === 'mia' ? 'Ya es tuyo' : HORARIO[t] }));
+    }));
+    btn.disabled = !S.dia;
+    const quedan = S.t.maxFichas > 0 ? ` · puedes tener hasta ${S.t.maxFichas}` : '';
+    meta.textContent = S.mis.length ? `Llevas ${S.mis.length} ficha${S.mis.length === 1 ? '' : 's'}${quedan}.` : 'Se paga en efectivo a los anfitriones.';
+  }
+
+  $('#b-solo-nombre').hidden = S.nombreSellado || !S.t.abierto;
+}
+
+$('#b-apostar').addEventListener('click', () => {
+  if (!S.dia) { toast('Primero elige un día del tablero.'); return; }
+  S.soloNombre = false;
+  if (S.nombreSellado) enviar({ fecha: S.dia, turno: S.turno }, $('#b-apostar'));
+  else ir('nombre');
+});
+
+$('#b-solo-nombre').addEventListener('click', () => {
+  S.soloNombre = true;
+  ir('nombre');
+});
+
+/* ---------------- 3 · Nombre ---------------- */
+function renderNombre() {
+  const conFecha = !S.soloNombre && !!S.dia;
+  const ctx = $('#nombre-ctx');
+  ctx.hidden = !conFecha;
+  ctx.textContent = conFecha ? `Tu ficha: ${fechaLarga(S.dia)} · ${S.turno}` : '';
+  $('#nombre-step').textContent = conFecha ? '2 / 2' : '';
+  $('#b-solo-fecha').hidden = !conFecha;
+  $('#b-sellar').textContent = conFecha ? 'Sellar apuesta' : 'Sellar nombre';
+  $('#err-nombre').textContent = '';
+}
+
+$('#f-nombre').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const nombreBebe = $('#in-bebe').value.replace(/\s+/g, ' ').trim();
+  const conFecha = !S.soloNombre && !!S.dia;
+  if (nombreBebe.length < 2) {
+    $('#err-nombre').textContent = conFecha ? 'Escribe un nombre, o apuesta solo la fecha.' : 'Escribe un nombre.';
+    $('#in-bebe').focus();
+    return;
+  }
+  const slot = $('#slot');
+  slot.classList.remove('spin'); void slot.offsetWidth; slot.classList.add('spin');
+  enviar(conFecha ? { fecha: S.dia, turno: S.turno, nombreBebe } : { nombreBebe }, $('#b-sellar'));
+});
+
+$('#b-solo-fecha').addEventListener('click', () => {
+  if (S.dia) enviar({ fecha: S.dia, turno: S.turno }, $('#b-solo-fecha'));
+});
+
+/* ---------------- Enviar apuesta ---------------- */
+async function enviar(datos, btn) {
+  if (!S.jugador) { ir('entrada'); return; }
+  setBusy(btn, true);
+  try {
+    const r = await api.apostar(Object.assign({ nombre: S.jugador.nombre, cel: S.jugador.cel }, datos));
+    if (!r.ok) {
+      if (r.tablero) aplicarTablero(r.tablero);
+      toast(r.error || 'No se pudo registrar la apuesta.');
+      if (r.code === 'tomada') { S.dia = null; ir('fecha'); }
+      else if (r.code === 'cerrada') ir('fecha');
+      else if (r.code === 'nombre') { S.nombreSellado = true; ir('fecha'); }
+      else if (r.code === 'max') { try { aplicarJugador(await api.jugador(S.jugador.nombre, S.jugador.cel)); } catch (e) { /* nada */ } ir('fecha'); }
+      return;
+    }
+    aplicarJugador(r);
+    S.ultima = r.ficha || null;
+    S.ultimoNombre = !!r.nombreGuardado;
+    S.dia = null;
+    S.soloNombre = false;
+    $('#in-bebe').value = '';
+    ir('ficha');
+  } catch (ex) {
+    toast(ex.message);
+  } finally {
+    setBusy(btn, false);
+  }
+}
+
+/* ---------------- 4 · Mis fichas ---------------- */
+function renderFicha() {
+  const u = S.ultima;
+  const titulo = $('#t-ficha');
+  const sub = $('#ficha-sub');
+  if (u) {
+    titulo.textContent = '¡Ficha en juego!';
+    sub.textContent = 'Muéstrales esta pantalla a los anfitriones cuando pagues.';
+  } else if (S.ultimoNombre) {
+    titulo.textContent = '¡Nombre sellado!';
+    sub.textContent = 'Nadie lo verá hasta la gran revelación.';
+  } else {
+    titulo.textContent = 'Tus fichas';
+    sub.textContent = S.mis.length ? 'Aquí ves si cada ficha ya está pagada.' : 'Todavía no tienes fichas de fecha.';
+  }
+
+  $('#ticket').hidden = !u;
+  $('#ticket-note').hidden = !u;
+  if (u) {
+    $('#tk-no').textContent = `Ficha N.º ${u.numero}`;
+    $('#tk-jugador').textContent = `${S.jugador.nombre} · ${S.jugador.cel}`;
+    $('#tk-fecha').textContent = `${fechaLarga(u.fecha, true)} · ${u.turno}`;
+    $('#tk-nombre').textContent = S.nombreSellado ? 'Sellado hasta la revelación' : 'Sin apuesta de nombre';
+    $('#tk-lock').style.display = S.nombreSellado ? '' : 'none';
+    $('#tk-valor').textContent = clp(S.t.valor);
+  }
+  $('#sealed-card').hidden = !(S.ultimoNombre && !u);
+
+  $('#pozo-n').textContent = clp(S.t.pozo);
+  $('#pozo-sub').textContent = `Fichas pagadas: ${S.t.pagadas} de ${S.t.fichas}`;
+
+  $('#mine').hidden = !S.mis.length;
+  $('#mine-list').replaceChildren(...S.mis.slice().sort((a, b) => a.numero - b.numero).map((f) => el('li', { class: 'mine-item' },
+    el('span', { class: 'mine-no', text: `N.º ${f.numero}` }),
+    el('span', { class: 'mine-date', text: `${fechaCorta(f.fecha)} · ${f.turno}` }),
+    el('span', { class: 'badge ' + (f.pagada ? 'badge--paid' : 'badge--pending'), text: f.pagada ? 'Pagada' : 'Pendiente' })
+  )));
+
+  $('#b-otra').hidden = !S.t.abierto || maxAlcanzado();
+  $('#b-otra').textContent = S.mis.length ? 'Apostar otra fecha' : 'Apostar una fecha';
+}
+
+$('#b-otra').addEventListener('click', () => ir('fecha'));
+
+$('#b-refresh').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  setBusy(btn, true, 'Actualizando…');
+  try {
+    const r = await api.jugador(S.jugador.nombre, S.jugador.cel);
+    if (r.ok) { aplicarJugador(r); renderFicha(); toast('Listo, estado actualizado.'); }
+    else toast(r.error);
+  } catch (ex) {
+    toast(ex.message);
+  } finally {
+    setBusy(btn, false);
+  }
+});
+
+/* ---------------- Cartel con QR ---------------- */
+const QR_LIB = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+
+function qrSvg(texto) {
+  const qr = qrcode(0, 'M');
+  qr.addData(texto);
+  qr.make();
+  const n = qr.getModuleCount();
+  const m = 4;
+  const lado = n + m * 2;
+  let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c + m},${r + m}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${lado} ${lado}" shape-rendering="crispEdges" aria-hidden="true"><rect width="${lado}" height="${lado}" fill="#FFFFFF"/><path d="${d}" fill="#23091C"/></svg>`;
+}
+
+function mostrarCartel() {
+  document.querySelector('main.app').hidden = true;
+  $('#s-cartel').hidden = false;
+  $('#poster-warn').hidden = !DEMO;
+  document.title = 'BabyBet · Cartel';
+  const url = location.origin + location.pathname;
+  $('#poster-url').textContent = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const caja = $('#qr');
+  const fallo = () => { caja.innerHTML = '<p class="qr-msg">No se pudo generar el QR. Revisa la conexión y recarga la página.</p>'; };
+  const s = document.createElement('script');
+  s.src = QR_LIB;
+  s.onload = () => { try { caja.innerHTML = qrSvg(url); caja.dataset.listo = '1'; } catch (e) { fallo(); } };
+  s.onerror = fallo;
+  document.head.append(s);
+  $('#b-print').addEventListener('click', () => window.print());
+}
+
+/* ---------------- Inicio ---------------- */
+(async function iniciar() {
+  if (new URLSearchParams(location.search).has('cartel')) mostrarCartel();
+  $('#demo').hidden = !DEMO;
+  const guardado = store.get('babybet-jugador');
+  if (guardado && guardado.nombre) {
+    $('#in-nombre').value = guardado.nombre;
+    $('#in-cel').value = guardado.cel || '';
+  }
+  try {
+    aplicarTablero(await api.tablero());
+  } catch (e) {
+    toast(e.message);
+  }
+})();
+</script>
+</body>
+</html>
