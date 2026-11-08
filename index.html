@@ -8,6 +8,12 @@
 <meta property="og:title" content="BabyBet">
 <meta property="og:description" content="El casino oficial del baby shower: apuesta la fecha y adivina el nombre de la bebé.">
 <meta name="theme-color" content="#23091C">
+<link rel="apple-touch-icon" href="icons/babybet-180.png">
+<link rel="manifest" href="babybet.webmanifest">
+<meta name="apple-mobile-web-app-title" content="BabyBet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23F5A8C3'/%3E%3Ccircle cx='32' cy='32' r='25' fill='none' stroke='%23FBEFE6' stroke-width='6' stroke-dasharray='9.8 9.8'/%3E%3Ccircle cx='32' cy='32' r='17' fill='%2323091C'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -151,6 +157,8 @@ h1,h2,p{margin:0}
 .pill--free{border:1px solid var(--gold)}
 .pill--taken{background:var(--gold)}
 .pill--mine{background:var(--pink)}
+.pill--own{background:var(--cream)}
+.day--foco{border-color:var(--pink-soft)}
 .pill--past{background:var(--surface-2)}
 .pill--legend{border:1px solid var(--muted)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
@@ -164,6 +172,13 @@ h1,h2,p{margin:0}
 .bet-prize strong{color:var(--gold)}
 .bet-date{margin-top:2px;font-size:17px;font-weight:700}
 .bet-meta{font-size:12px;color:var(--muted);text-align:center}
+.sel-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.sel-list:empty{display:none}
+.sel-chip{display:flex;align-items:center;min-height:44px;padding-left:12px;border-radius:999px;background:var(--pink);color:var(--ink);font-size:13px;font-weight:700;white-space:nowrap}
+.sel-chip button{width:40px;height:44px;border:0;border-radius:999px;background:transparent;color:var(--ink);display:flex;align-items:center;justify-content:center}
+.bet-head{flex-wrap:wrap;row-gap:2px}
+.bet-head .eyebrow{white-space:nowrap}
+.tk-val span{display:block}
 .turnos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .turno{height:50px;padding:0;border-radius:12px;border:1px solid var(--gold);background:transparent;color:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .turno b{font-size:15px;line-height:1}
@@ -271,6 +286,7 @@ h1,h2,p{margin:0}
   <symbol id="i-snd" viewBox="0 0 24 24"><path d="M4 9.5H7.5L12 5.5V18.5L7.5 14.5H4Z"/><path d="M15.5 9.2A4 4 0 0 1 15.5 14.8"/><path d="M18 6.8A7.5 7.5 0 0 1 18 17.2"/></symbol>
   <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5H7.5L12 5.5V18.5L7.5 14.5H4Z"/><path d="M16 9.5L21 14.5M21 9.5L16 14.5"/></symbol>
   <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5L16 12L9 19"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M7 7L17 17M17 7L7 17"/></symbol>
 </svg>
 
 <main class="app">
@@ -315,7 +331,7 @@ h1,h2,p{margin:0}
             <span class="game-title">Fecha de nacimiento</span>
             <span class="game-desc">Elige día y turno. Quien acierte se lleva el <span data-pct>40</span>% del pozo.</span>
           </span>
-          <span class="game-tag game-tag--gold" data-valor>$3.000</span>
+          <span class="game-tag game-tag--gold" data-valor>$5.000</span>
         </button>
         <button class="game game--btn" type="submit" data-juego="nombre" id="b-jugar-nombre">
           <span class="game-ic game-ic--pink"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="#i-bow"/></svg></span>
@@ -351,7 +367,7 @@ h1,h2,p{margin:0}
     </header>
     <div class="heading">
       <h1 id="t-fecha" tabindex="-1">Elige tu fecha</h1>
-      <p>Cada día tiene dos fichas: AM y PM. Las doradas ya tienen dueño y los días que ya pasaron están cerrados.</p>
+      <p>Toca un día para elegirlo y vuelve a tocarlo para quitarlo. Cada día tiene dos fichas, AM y PM; las doradas ya tienen dueño.</p>
     </div>
     <div class="tabs" id="tabs"></div>
     <div class="cal">
@@ -362,18 +378,20 @@ h1,h2,p{margin:0}
       <span class="ampm">AM <i class="pill pill--legend" aria-hidden="true"></i><i class="pill pill--legend" aria-hidden="true"></i> PM</span>
       <span><i class="pill pill--free" aria-hidden="true"></i>Libre</span>
       <span><i class="pill pill--taken" aria-hidden="true"></i>Tomado</span>
-      <span><i class="pill pill--mine" aria-hidden="true"></i>Tu ficha</span>
+      <span><i class="pill pill--mine" aria-hidden="true"></i>Elegida</span>
+      <span><i class="pill pill--own" aria-hidden="true"></i>Ya es tuya</span>
     </div>
     <div class="bet-card">
       <div>
         <div class="bet-head">
-          <span class="eyebrow">Tu ficha</span>
+          <span class="eyebrow">Tus fichas <span id="sel-cuenta"></span></span>
           <span class="bet-prize">Si aciertas: <strong><span data-pct>40</span>% del pozo</strong></span>
         </div>
-        <p class="bet-date" id="bet-date" aria-live="polite">Elige un día del tablero</p>
+        <p class="bet-date" id="bet-date">Toca un día del tablero</p>
       </div>
-      <div class="turnos" id="turnos"></div>
-      <button class="btn btn--gold" type="button" id="b-apostar">Apostar esta ficha</button>
+      <div class="turnos" id="turnos" role="group" aria-label="Turnos del día elegido"></div>
+      <ul class="sel-list" id="sel-list" aria-label="Fichas elegidas" aria-live="polite"></ul>
+      <button class="btn btn--gold" type="button" id="b-apostar">Apostar</button>
       <p class="bet-meta" id="bet-meta"></p>
     </div>
     <button class="btn btn--link" type="button" id="b-solo-nombre">Solo quiero adivinar el nombre</button>
@@ -436,12 +454,12 @@ h1,h2,p{margin:0}
       <div class="ticket-top">
         <div class="ticket-head"><span class="ticket-brand">BabyBet</span><span class="ticket-no" id="tk-no"></span></div>
         <div class="tk-row"><span class="tk-label">Jugador</span><span class="tk-val" id="tk-jugador"></span></div>
-        <div class="tk-row"><span class="tk-label">Fecha y turno</span><span class="tk-val" id="tk-fecha"></span></div>
+        <div class="tk-row"><span class="tk-label" id="tk-fecha-l">Fecha y turno</span><span class="tk-val" id="tk-fecha"></span></div>
         <div class="tk-row"><span class="tk-label">Nombre de la bebé</span><span class="tk-val tk-val--plum"><svg class="ic" width="18" height="18" aria-hidden="true" id="tk-lock"><use href="#i-lock"/></svg><span id="tk-nombre"></span></span></div>
       </div>
       <div class="perf" aria-hidden="true"><span></span></div>
       <div class="ticket-bottom">
-        <div class="tk-row"><span class="tk-label">Valor de la ficha</span><span class="tk-val tk-val--big" id="tk-valor"></span></div>
+        <div class="tk-row"><span class="tk-label" id="tk-valor-l">Valor de la ficha</span><span class="tk-val tk-val--big" id="tk-valor"></span></div>
         <span class="badge badge--pending">Pendiente de pago</span>
       </div>
     </article>
@@ -607,8 +625,8 @@ const apiReal = {
 
 // Imita al backend para probar la página sin planilla.
 const apiDemo = (() => {
-  const KEY = 'babybet-demo-v2';
-  const cfg = { abierto: true, valor: 3000, maxFichas: 5, desde: '2026-11-01', hasta: '2027-01-31', porcentaje: 40 };
+  const KEY = 'babybet-demo-v3';
+  const cfg = { abierto: true, valor: 5000, maxFichas: 3, desde: '2026-11-01', hasta: '2027-01-31', porcentaje: 40, version: 3 };
   const ejemplo = ['2026-12-18|AM', '2026-12-18|PM', '2026-12-20|PM', '2026-12-24|AM', '2026-12-24|PM', '2026-12-25|AM', '2026-12-28|AM', '2027-01-01|AM'];
   const load = () => store.get(KEY) || {
     contador: ejemplo.length,
@@ -635,27 +653,32 @@ const apiDemo = (() => {
       const db = load();
       const clave = normalizar(d.nombre) + '#' + d.cel;
       const nombreBebe = String(d.nombreBebe || '').trim();
-      if (!d.fecha && !nombreBebe) return err('No hay nada que apostar todavía.');
-      if (d.fecha) {
-        if (turnoEmpezo(d.fecha, d.turno)) return err('Ese turno ya empezó. Elige uno que todavía no llegue.', 'pasada', { tablero: tablero(db) });
-        if (db.fichas.filter((f) => f.clave === clave).length >= cfg.maxFichas) return err(`Ya tienes el máximo de ${cfg.maxFichas} fichas.`, 'max');
-        if (db.fichas.some((f) => f.fecha === d.fecha && f.turno === d.turno)) return err('Alguien tomó esa ficha hace un momento. Elige otra.', 'tomada', { tablero: tablero(db) });
+      const pedidas = Array.isArray(d.fichas) ? d.fichas : (d.fecha ? [{ fecha: d.fecha, turno: d.turno }] : []);
+      if (!pedidas.length && !nombreBebe) return err('No hay nada que apostar todavía.');
+      if (pedidas.length) {
+        const k = (p) => p.fecha + '|' + p.turno;
+        const pasadas = pedidas.filter((p) => turnoEmpezo(p.fecha, p.turno));
+        if (pasadas.length) return err('Ese turno ya empezó. Elige uno que todavía no llegue.', 'pasada', { pasadas: pasadas.map(k), tablero: tablero(db) });
+        const mias = db.fichas.filter((f) => f.clave === clave).length;
+        if (mias + pedidas.length > cfg.maxFichas) {
+          const quedan = Math.max(0, cfg.maxFichas - mias);
+          return err(quedan ? `Solo puedes apostar ${quedan} ficha${quedan === 1 ? '' : 's'} más (máximo ${cfg.maxFichas}).` : `Ya tienes el máximo de ${cfg.maxFichas} fichas.`, 'max', { quedan });
+        }
+        const tomadas = pedidas.filter((p) => db.fichas.some((f) => k(f) === k(p)));
+        if (tomadas.length) return err('Alguien tomó esa ficha hace un momento. Elige otra.', 'tomada', { tomadasAhora: tomadas.map(k), tablero: tablero(db) });
       }
       const yaTiene = db.nombres.some((n) => n.clave === clave);
-      if (!d.fecha && yaTiene) return err('Tu nombre ya estaba sellado. Se adivina una sola vez.', 'nombre');
-      let ficha = null;
-      if (d.fecha) {
+      if (!pedidas.length && yaTiene) return err('Tu nombre ya estaba sellado. Se adivina una sola vez.', 'nombre');
+      const nuevas = pedidas.map((p) => {
         db.contador += 1;
-        ficha = { numero: db.contador, clave, fecha: d.fecha, turno: d.turno, pagada: false };
-        db.fichas.push(ficha);
-      }
+        const f = { numero: db.contador, clave, fecha: p.fecha, turno: p.turno, pagada: false };
+        db.fichas.push(f);
+        return { numero: f.numero, fecha: f.fecha, turno: f.turno, pagada: false };
+      });
       const guardar = !!nombreBebe && !yaTiene;
       if (guardar) db.nombres.push({ clave, nombre: nombreBebe });
       save(db);
-      return wait(Object.assign(estado(db, clave), {
-        ficha: ficha && { numero: ficha.numero, fecha: ficha.fecha, turno: ficha.turno, pagada: false },
-        nombreGuardado: guardar,
-      }));
+      return wait(Object.assign(estado(db, clave), { fichasNuevas: nuevas, ficha: nuevas[0] || null, nombreGuardado: guardar }));
     },
   };
 })();
@@ -904,15 +927,15 @@ const Sonido = (() => {
 
 /* ---------------- Estado ---------------- */
 const S = {
-  t: { abierto: true, valor: 3000, maxFichas: 5, desde: '2026-11-01', hasta: '2027-01-31', porcentaje: 40, tomadas: new Set(), fichas: 0, pagadas: 0, pozo: 0 },
+  t: { abierto: true, valor: 5000, maxFichas: 3, desde: '2026-11-01', hasta: '2027-01-31', porcentaje: 40, tomadas: new Set(), fichas: 0, pagadas: 0, pozo: 0 },
   jugador: null,        // { nombre, cel }
   mis: [],              // fichas del jugador
   nombreSellado: false,
   mes: null,            // { y, m }
-  dia: null,            // 'AAAA-MM-DD'
-  turno: 'PM',
+  sel: [],              // fichas elegidas, 'AAAA-MM-DD|AM'
+  foco: null,           // día abierto en la tarjeta de abajo
   soloNombre: false,
-  ultima: null,         // última ficha creada
+  ultimas: [],          // fichas recién apostadas
   ultimoNombre: false,
   pantalla: 'entrada',
 };
@@ -931,10 +954,15 @@ function aplicarJugador(r) {
   aplicarTablero(r.tablero);
 }
 const maxAlcanzado = () => S.t.maxFichas > 0 && S.mis.length >= S.t.maxFichas;
+const cupo = () => (S.t.maxFichas > 0 ? Math.max(0, S.t.maxFichas - S.mis.length) : 20);
 const esMia = (iso, t) => S.mis.some((f) => f.fecha === iso && f.turno === t);
+const clave = (iso, t) => iso + '|' + t;
+const elegida = (iso, t) => S.sel.includes(clave(iso, t));
+const etiqueta = (k) => { const [iso, t] = k.split('|'); return `${fechaCorta(iso)} · ${t}`; };
+const plural = (n, uno, varios) => (n === 1 ? uno : varios);
 function estadoTurno(iso, t) {
   if (esMia(iso, t)) return 'mia';
-  if (S.t.tomadas.has(iso + '|' + t)) return 'tomada';
+  if (S.t.tomadas.has(clave(iso, t))) return 'tomada';
   if (turnoEmpezo(iso, t)) return 'pasada';
   return 'libre';
 }
@@ -996,10 +1024,12 @@ $('#f-entrada').addEventListener('submit', async (e) => {
   try {
     const r = await api.jugador(nombre, cel);
     if (!r.ok) { err.textContent = r.error; return; }
+    const cambio = !S.jugador || S.jugador.nombre !== nombre || S.jugador.cel !== cel;
     S.jugador = { nombre, cel };
     store.set('babybet-jugador', S.jugador);
     aplicarJugador(r);
-    S.ultima = null;
+    if (cambio) { S.sel = []; S.foco = null; }
+    S.ultimas = [];
     S.ultimoNombre = false;
     if (juego === 'nombre') {
       if (S.nombreSellado) { toast('Tu nombre ya está sellado. Se adivina una sola vez.'); ir('ficha'); }
@@ -1043,24 +1073,54 @@ function mesInicial(meses) {
   return meses[0];
 }
 
-function validarSeleccion() {
-  if (!S.dia) return;
-  const libre = (t) => estadoTurno(S.dia, t) === 'libre';
-  if (!libre(S.turno)) {
-    const otro = S.turno === 'AM' ? 'PM' : 'AM';
-    if (libre(otro)) S.turno = otro; else S.dia = null;
+// Quita de la selección lo que dejó de estar libre (lo tomó otra persona o ya empezó).
+function limpiarSeleccion(avisar) {
+  const fuera = S.sel.filter((k) => { const [iso, t] = k.split('|'); return estadoTurno(iso, t) !== 'libre'; });
+  if (fuera.length) {
+    S.sel = S.sel.filter((k) => !fuera.includes(k));
+    if (avisar) toast(`${plural(fuera.length, 'Ya no está disponible', 'Ya no están disponibles')}: ${fuera.map(etiqueta).join(', ')}.`);
   }
+  if (S.sel.length > cupo()) S.sel = S.sel.slice(0, cupo());
+}
+
+// Elige o quita un turno. Devuelve false si no se pudo elegir.
+function alternar(iso, t) {
+  const k = clave(iso, t);
+  if (S.sel.includes(k)) { S.sel = S.sel.filter((x) => x !== k); Sonido.ficha(); return true; }
+  if (estadoTurno(iso, t) !== 'libre') return false;
+  const c = cupo();
+  if (S.sel.length >= c) {
+    Sonido.error();
+    toast(c === 0 ? `Ya tienes tus ${S.t.maxFichas} fichas.` : `Puedes elegir hasta ${c} ${plural(c, 'ficha', 'fichas')}. Quita una para cambiarla.`);
+    return false;
+  }
+  S.sel.push(k);
+  S.sel.sort();
+  Sonido.ficha();
+  return true;
+}
+
+function tocarDia(iso) {
+  const delDia = S.sel.filter((k) => k.startsWith(iso + '|'));
+  if (S.foco === iso && delDia.length) {
+    S.sel = S.sel.filter((k) => !delDia.includes(k));      // segundo toque: quitar
+    Sonido.ficha();
+  } else if (!delDia.length) {
+    alternar(iso, estadoTurno(iso, 'AM') === 'libre' ? 'AM' : 'PM');
+  }
+  S.foco = iso;
+  renderFecha();
 }
 
 function renderFecha() {
-  validarSeleccion();
+  limpiarSeleccion(true);
   const meses = mesesDelRango();
   if (!S.mes || !meses.some((x) => x.y === S.mes.y && x.m === S.mes.m)) S.mes = mesInicial(meses);
 
   // Arriba a la derecha: "Mis fichas" o el paso
   $('#fecha-right').replaceChildren(
     S.mis.length
-      ? el('button', { type: 'button', class: 'pill-btn', text: `Mis fichas (${S.mis.length})`, onclick: () => { S.ultima = null; S.ultimoNombre = false; ir('ficha'); } })
+      ? el('button', { type: 'button', class: 'pill-btn', text: `Mis fichas (${S.mis.length})`, onclick: () => { S.ultimas = []; S.ultimoNombre = false; ir('ficha'); } })
       : el('span', { class: 'step', text: S.nombreSellado ? '' : '1 / 2' })
   );
 
@@ -1088,27 +1148,23 @@ function renderFecha() {
     const st = { AM: estadoTurno(iso, 'AM'), PM: estadoTurno(iso, 'PM') };
     const cerrado = st.AM !== 'libre' && st.PM !== 'libre';
     const pasado = cerrado && (st.AM === 'pasada' || st.PM === 'pasada');
-    const sel = !cerrado && S.dia === iso;
+    const conSel = elegida(iso, 'AM') || elegida(iso, 'PM');
     const pill = (t) => {
       let c = 'pill--free';
-      if (st[t] === 'mia' || (sel && S.turno === t)) c = 'pill--mine';
+      if (elegida(iso, t)) c = 'pill--mine';
+      else if (st[t] === 'mia') c = 'pill--own';
       else if (st[t] === 'tomada') c = 'pill--taken';
       else if (st[t] === 'pasada') c = 'pill--past';
       return el('i', { class: 'pill ' + c });
     };
-    const txt = (t) => ({ mia: 'tuya', tomada: 'tomado', pasada: 'cerrado', libre: 'libre' })[st[t]];
+    const txt = (t) => (elegida(iso, t) ? 'elegida' : { mia: 'ya es tuya', tomada: 'tomado', pasada: 'cerrado', libre: 'libre' }[st[t]]);
     celdas.push(el('button', {
       type: 'button',
-      class: 'day' + (sel ? ' day--sel' : '') + (pasado ? ' day--past' : cerrado ? ' day--full' : ''),
+      class: 'day' + (conSel ? ' day--sel' : '') + (!conSel && S.foco === iso ? ' day--foco' : '') + (pasado ? ' day--past' : cerrado ? ' day--full' : ''),
       disabled: cerrado || !S.t.abierto,
-      'aria-pressed': cerrado ? null : String(sel),
+      'aria-pressed': cerrado ? null : String(conSel),
       'aria-label': `${fechaLarga(iso)}: AM ${txt('AM')}, PM ${txt('PM')}`,
-      onclick: () => {
-        S.dia = iso;
-        if (estadoTurno(iso, S.turno) !== 'libre') S.turno = S.turno === 'AM' ? 'PM' : 'AM';
-        Sonido.ficha();
-        renderFecha();
-      },
+      onclick: () => tocarDia(iso),
     }, el('span', { class: 'day-n', text: String(d) }), el('span', { class: 'pills', 'aria-hidden': 'true' }, pill('AM'), pill('PM'))));
   }
   $('#grid').replaceChildren(...celdas);
@@ -1116,47 +1172,75 @@ function renderFecha() {
   // Tarjeta de apuesta
   const fecha = $('#bet-date');
   const turnos = $('#turnos');
+  const lista = $('#sel-list');
   const btn = $('#b-apostar');
   const meta = $('#bet-meta');
-  btn.textContent = `Apostar esta ficha · ${clp(S.t.valor)}`;
+  const c = cupo();
+  const n = S.sel.length;
+  $('#sel-cuenta').textContent = S.t.abierto && c > 0 ? `· ${n} de ${c}` : '';
 
   if (!S.t.abierto) {
     fecha.textContent = 'La mesa está cerrada';
     turnos.hidden = true;
+    lista.replaceChildren();
+    btn.textContent = 'Apostar';
     btn.disabled = true;
     meta.textContent = 'Ya no se reciben apuestas.';
-  } else if (maxAlcanzado()) {
+  } else if (c === 0) {
     fecha.textContent = `Ya tienes tus ${S.t.maxFichas} fichas`;
     turnos.hidden = true;
+    lista.replaceChildren();
+    btn.textContent = 'Apostar';
     btn.disabled = true;
     meta.textContent = '¡Suerte! Mira el estado en "Mis fichas".';
   } else {
-    fecha.textContent = S.dia ? `${fechaLarga(S.dia)} · ${S.turno}` : 'Elige un día del tablero';
-    turnos.hidden = false;
-    turnos.replaceChildren(...['AM', 'PM'].map((t) => {
-      const st = S.dia ? estadoTurno(S.dia, t) : 'libre';
-      const libre = st === 'libre';
-      const nota = { tomada: 'Tomado', mia: 'Ya es tuyo', pasada: 'Cerrado' }[st] || HORARIO[t];
+    fecha.textContent = S.foco ? fechaLarga(S.foco) : 'Toca un día del tablero';
+    turnos.hidden = !S.foco;
+    turnos.replaceChildren(...(S.foco ? ['AM', 'PM'] : []).map((t) => {
+      const st = estadoTurno(S.foco, t);
+      const sel = elegida(S.foco, t);
+      const nota = sel ? 'Elegida' : ({ tomada: 'Tomado', mia: 'Ya es tuya', pasada: 'Cerrado' }[st] || HORARIO[t]);
       return el('button', {
         type: 'button',
-        class: 'turno' + (libre ? '' : ' turno--cerrado'),
-        disabled: !libre || !S.dia,
-        'aria-pressed': String(!!S.dia && libre && S.turno === t),
-        onclick: () => { S.turno = t; Sonido.ficha(); renderFecha(); },
+        class: 'turno' + (sel || st === 'libre' ? '' : ' turno--cerrado'),
+        disabled: !sel && st !== 'libre',
+        'aria-pressed': String(sel),
+        'aria-label': `${t}, ${HORARIO[t]}: ${nota.toLowerCase()}`,
+        onclick: () => { alternar(S.foco, t); renderFecha(); },
       }, el('b', { text: t }), el('small', { text: nota }));
     }));
-    btn.disabled = !S.dia;
-    const quedan = S.t.maxFichas > 0 ? ` · puedes tener hasta ${S.t.maxFichas}` : '';
-    meta.textContent = S.mis.length ? `Llevas ${S.mis.length} ficha${S.mis.length === 1 ? '' : 's'}${quedan}.` : 'Se paga en efectivo a los anfitriones.';
+    lista.replaceChildren(...S.sel.map((k) => el('li', { class: 'sel-chip' },
+      el('span', { text: etiqueta(k) }),
+      el('button', {
+        type: 'button',
+        'aria-label': `Quitar ${etiqueta(k)}`,
+        onclick: () => { S.sel = S.sel.filter((x) => x !== k); Sonido.ficha(); renderFecha(); },
+      }, svgIcono('i-x', 18)))));
+    btn.textContent = n ? `Apostar ${n} ${plural(n, 'ficha', 'fichas')} · ${clp(n * S.t.valor)}` : 'Elige al menos una fecha';
+    btn.disabled = !n;
+    meta.textContent = S.mis.length
+      ? `Ya tienes ${S.mis.length} ${plural(S.mis.length, 'ficha', 'fichas')}; puedes elegir ${c} más.`
+      : `Puedes elegir hasta ${c} ${plural(c, 'ficha', 'fichas')}. Se pagan en efectivo a los anfitriones.`;
   }
 
   $('#b-solo-nombre').hidden = S.nombreSellado || !S.t.abierto;
 }
 
+function svgIcono(id, size) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'ic'); svg.setAttribute('width', size); svg.setAttribute('height', size); svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  use.setAttribute('href', '#' + id);
+  svg.append(use);
+  return svg;
+}
+
+const selComoFichas = () => S.sel.map((k) => { const [fecha, turno] = k.split('|'); return { fecha, turno }; });
+
 $('#b-apostar').addEventListener('click', () => {
-  if (!S.dia) { toast('Primero elige un día del tablero.'); return; }
+  if (!S.sel.length) { toast('Primero elige al menos una fecha.'); return; }
   S.soloNombre = false;
-  if (S.nombreSellado) enviar({ fecha: S.dia, turno: S.turno }, $('#b-apostar'));
+  if (S.nombreSellado) enviar({ fichas: selComoFichas() }, $('#b-apostar'));
   else ir('nombre');
 });
 
@@ -1167,13 +1251,14 @@ $('#b-solo-nombre').addEventListener('click', () => {
 
 /* ---------------- 3 · Nombre ---------------- */
 function renderNombre() {
-  const conFecha = !S.soloNombre && !!S.dia;
+  const conFecha = !S.soloNombre && S.sel.length > 0;
   const ctx = $('#nombre-ctx');
   ctx.hidden = !conFecha;
-  ctx.textContent = conFecha ? `Tu ficha: ${fechaLarga(S.dia)} · ${S.turno}` : '';
+  ctx.textContent = conFecha ? `${plural(S.sel.length, 'Tu ficha', 'Tus fichas')}: ${S.sel.map(etiqueta).join(', ')}` : '';
   $('#nombre-step').textContent = conFecha ? '2 / 2' : '';
   $('#s-nombre [data-go]').dataset.go = conFecha ? 'fecha' : 'entrada';
   $('#b-solo-fecha').hidden = !conFecha;
+  $('#b-solo-fecha').textContent = S.sel.length > 1 ? 'Apostar solo las fechas, sin nombre' : 'Apostar solo la fecha, sin nombre';
   $('#b-sellar').textContent = conFecha ? 'Sellar apuesta' : 'Sellar nombre';
   $('#err-nombre').textContent = '';
 }
@@ -1181,47 +1266,74 @@ function renderNombre() {
 $('#f-nombre').addEventListener('submit', (e) => {
   e.preventDefault();
   const nombreBebe = $('#in-bebe').value.replace(/\s+/g, ' ').trim();
-  const conFecha = !S.soloNombre && !!S.dia;
+  const conFecha = !S.soloNombre && S.sel.length > 0;
   if (nombreBebe.length < 2) {
-    $('#err-nombre').textContent = conFecha ? 'Escribe un nombre, o apuesta solo la fecha.' : 'Escribe un nombre.';
+    $('#err-nombre').textContent = conFecha ? 'Escribe un nombre, o apuesta solo las fechas.' : 'Escribe un nombre.';
     $('#in-bebe').focus();
     return;
   }
   const slot = $('#slot');
   slot.classList.remove('spin'); void slot.offsetWidth; slot.classList.add('spin');
-  enviar(conFecha ? { fecha: S.dia, turno: S.turno, nombreBebe } : { nombreBebe }, $('#b-sellar'));
+  enviar(conFecha ? { fichas: selComoFichas(), nombreBebe } : { nombreBebe }, $('#b-sellar'));
 });
 
 $('#b-solo-fecha').addEventListener('click', () => {
-  if (S.dia) enviar({ fecha: S.dia, turno: S.turno }, $('#b-solo-fecha'));
+  if (S.sel.length) enviar({ fichas: selComoFichas() }, $('#b-solo-fecha'));
 });
 
 /* ---------------- Enviar apuesta ---------------- */
+// Si la planilla todavía tiene el script anterior (sin apuestas múltiples), envía las fichas de a una.
+async function apostarCompat(datos) {
+  const base = { nombre: S.jugador.nombre, cel: S.jugador.cel };
+  if (!datos.fichas || (S.t.version || 0) >= 3) return api.apostar(Object.assign(base, datos));
+  let ultimo = null, guardado = false, nombre = datos.nombreBebe;
+  const nuevas = [];
+  for (const f of datos.fichas) {
+    const r = await api.apostar(Object.assign({}, base, f, nombre ? { nombreBebe: nombre } : {}));
+    if (!r.ok) {
+      const k = clave(f.fecha, f.turno);
+      if (r.code === 'tomada') r.tomadasAhora = [k];
+      if (r.code === 'pasada') r.pasadas = [k];
+      if (!nuevas.length) return r;
+      return Object.assign({}, ultimo, { fichasNuevas: nuevas, nombreGuardado: guardado, parcial: r.error });
+    }
+    nombre = null;
+    guardado = guardado || !!r.nombreGuardado;
+    ultimo = r;
+    if (r.ficha) nuevas.push(r.ficha);
+  }
+  return Object.assign({}, ultimo, { fichasNuevas: nuevas, nombreGuardado: guardado });
+}
+
 async function enviar(datos, btn) {
   if (!S.jugador) { ir('entrada'); return; }
   setBusy(btn, true);
   const detenerGiro = Sonido.girar();
   try {
-    const r = await api.apostar(Object.assign({ nombre: S.jugador.nombre, cel: S.jugador.cel }, datos));
+    const r = await apostarCompat(datos);
     detenerGiro();
     if (!r.ok) {
       Sonido.error();
       if (r.tablero) aplicarTablero(r.tablero);
-      toast(r.error || 'No se pudo registrar la apuesta.');
-      if (r.code === 'tomada' || r.code === 'pasada') { S.dia = null; ir('fecha'); }
-      else if (r.code === 'cerrada') ir('fecha');
+      const quitar = [].concat(r.tomadasAhora || [], r.pasadas || []);
+      if (quitar.length) S.sel = S.sel.filter((k) => !quitar.includes(k));
+      const quedan = S.sel.length ? ` ${plural(S.sel.length, 'La otra sigue elegida.', 'Las demás siguen elegidas.')}` : '';
+      toast((r.error || 'No se pudo registrar la apuesta.') + (quitar.length ? quedan : ''));
+      if (r.code === 'tomada' || r.code === 'pasada' || r.code === 'cerrada') ir('fecha');
       else if (r.code === 'nombre') { S.nombreSellado = true; ir('fecha'); }
       else if (r.code === 'max') { try { aplicarJugador(await api.jugador(S.jugador.nombre, S.jugador.cel)); } catch (e) { /* nada */ } ir('fecha'); }
       return;
     }
     Sonido.premio();
     aplicarJugador(r);
-    S.ultima = r.ficha || null;
+    S.ultimas = r.fichasNuevas || (r.ficha ? [r.ficha] : []);
     S.ultimoNombre = !!r.nombreGuardado;
-    S.dia = null;
+    S.sel = [];
+    S.foco = null;
     S.soloNombre = false;
     $('#in-bebe').value = '';
     ir('ficha');
+    if (r.parcial) toast(`Se registraron ${S.ultimas.length}. ${r.parcial}`);
   } catch (ex) {
     detenerGiro();
     Sonido.error();
@@ -1233,11 +1345,12 @@ async function enviar(datos, btn) {
 
 /* ---------------- 4 · Mis fichas ---------------- */
 function renderFicha() {
-  const u = S.ultima;
+  const u = S.ultimas;
+  const n = u.length;
   const titulo = $('#t-ficha');
   const sub = $('#ficha-sub');
-  if (u) {
-    titulo.textContent = '¡Ficha en juego!';
+  if (n) {
+    titulo.textContent = n === 1 ? '¡Ficha en juego!' : '¡Fichas en juego!';
     sub.textContent = 'Muéstrales esta pantalla a los anfitriones cuando pagues.';
   } else if (S.ultimoNombre) {
     titulo.textContent = '¡Nombre sellado!';
@@ -1247,17 +1360,20 @@ function renderFicha() {
     sub.textContent = S.mis.length ? 'Aquí ves si cada ficha ya está pagada.' : 'Todavía no tienes fichas de fecha.';
   }
 
-  $('#ticket').hidden = !u;
-  $('#ticket-note').hidden = !u;
-  if (u) {
-    $('#tk-no').textContent = `Ficha N.º ${u.numero}`;
+  $('#ticket').hidden = !n;
+  $('#ticket-note').hidden = !n;
+  $('#ticket-note').textContent = n > 1 ? 'Tus fichas se activan cuando los anfitriones confirmen el pago.' : 'Tu ficha se activa cuando los anfitriones confirmen el pago.';
+  if (n) {
+    $('#tk-no').textContent = n === 1 ? `Ficha N.º ${u[0].numero}` : `Fichas N.º ${u.map((f) => f.numero).join(', ')}`;
     $('#tk-jugador').textContent = `${S.jugador.nombre} · ${S.jugador.cel}`;
-    $('#tk-fecha').textContent = `${fechaLarga(u.fecha, true)} · ${u.turno}`;
+    $('#tk-fecha-l').textContent = n === 1 ? 'Fecha y turno' : 'Fechas y turnos';
+    $('#tk-fecha').replaceChildren(...u.map((f) => el('span', { text: `${fechaLarga(f.fecha, n === 1)} · ${f.turno}` })));
     $('#tk-nombre').textContent = S.nombreSellado ? 'Sellado hasta la revelación' : 'Sin apuesta de nombre';
     $('#tk-lock').style.display = S.nombreSellado ? '' : 'none';
-    $('#tk-valor').textContent = clp(S.t.valor);
+    $('#tk-valor-l').textContent = n === 1 ? 'Valor de la ficha' : `Total (${n} fichas)`;
+    $('#tk-valor').textContent = clp(S.t.valor * n);
   }
-  $('#sealed-card').hidden = !S.nombreSellado || !!u;
+  $('#sealed-card').hidden = !S.nombreSellado || !!n;
 
   $('#pozo-n').textContent = clp(S.t.pozo);
   $('#pozo-sub').textContent = `Fichas pagadas: ${S.t.pagadas} de ${S.t.fichas}`;
@@ -1270,7 +1386,7 @@ function renderFicha() {
   )));
 
   $('#b-otra').hidden = !S.t.abierto || maxAlcanzado();
-  $('#b-otra').textContent = S.mis.length ? 'Apostar otra fecha' : 'Apostar una fecha';
+  $('#b-otra').textContent = S.mis.length ? `Apostar otra fecha (te ${plural(cupo(), 'queda', 'quedan')} ${cupo()})` : 'Apostar una fecha';
   $('#b-nombre-ficha').hidden = !S.t.abierto || S.nombreSellado;
 }
 

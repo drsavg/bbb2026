@@ -2,13 +2,14 @@
 
 El casino oficial del baby shower. Hay dos juegos:
 
-- **Fecha de nacimiento:** cada persona elige día y turno (AM o PM). La ficha vale $3.000, cada persona puede tener hasta 5 fichas y quien gana se lleva el 40% del pozo.
+- **Fecha de nacimiento:** cada persona elige hasta 3 fichas (día y turno, AM o PM) en una sola apuesta. Toca un día para elegirlo y vuelve a tocarlo para quitarlo. La ficha vale $5.000 y quien gana se lleva el 40% del pozo.
 - **Nombre de la bebé:** es gratis, cada persona juega una vez y el premio es sorpresa. Se puede jugar desde la primera pantalla, sin comprar fichas.
 
 Archivos:
 - `index.html`: la página de los invitados. Tiene música suave y sonido de tragamonedas al apostar, y abriéndola con `?cartel` muestra el cartel con el QR.
 - `caja.html`: la app de los anfitriones. Se usa con PIN para cobrar, liberar fichas, ver los nombres, calcular el ganador, cambiar los ajustes y reiniciar todo desde el celular.
 - `Code.gs`: el script de la planilla de Google, que funciona como comando central.
+- `icons/` y los `.webmanifest`: los íconos y nombres que aparecen al agregar BabyBet o la Caja a la pantalla de inicio.
 
 ---
 
@@ -17,12 +18,13 @@ Archivos:
 > ⚠️ No uses "Nueva implementación", porque eso crea **otra URL** y la página dejaría de funcionar. Usa siempre "Administrar implementaciones".
 
 1. Abre la planilla, ve a **Extensiones › Apps Script**, reemplaza todo el código por el nuevo `Code.gs` y guarda.
-2. Elige la función `configurar` y presiona **Ejecutar**. No borra nada. Hace tres cosas:
-   - Cambia la ficha a $3.000, el máximo a 5 fichas y el tablero a 1 de noviembre–31 de enero. Solo cambia los valores que siguen como venían originalmente.
-   - Crea un **PIN de 6 dígitos** para la caja. Aparece en el **Registro de ejecución** y en la fila **PIN administrador** de la hoja Config.
-   - Deja todo listo para la caja.
+2. Elige la función `configurar` y presiona **Ejecutar**. No borra nada:
+   - Deja la ficha en $5.000, el máximo en 3 fichas y el tablero del 1 de noviembre al 31 de enero. Solo cambia los valores que siguen como los dejó una versión anterior; si los cambiaste a mano, los respeta.
+   - Si todavía no hay PIN, crea uno de 6 dígitos para la caja. Aparece en el **Registro de ejecución** y en la fila **PIN administrador** de la hoja Config. Si ya tenías uno, lo mantiene.
 3. Ve a **Implementar › Administrar implementaciones**, presiona el lápiz, en "Versión" elige **Nueva versión** y presiona **Implementar**.
 4. Abre la caja (`…/caja.html`), entra con el PIN y, en **Ajustes › Reiniciar todo**, borra las apuestas de prueba.
+
+Mientras no hagas el paso 3, la página sigue funcionando con el script anterior: envía las fichas elegidas de a una y muestra los valores que tenga la planilla.
 
 ---
 
@@ -79,6 +81,8 @@ Solo participan las fichas **pagadas**.
 
 **Funcionamiento del tablero:**
 - Cada día-turno se juega una sola vez. Si dos personas apuestan lo mismo al mismo tiempo, el script lo bloquea.
+- Las fichas elegidas se registran todas juntas o ninguna. Si alguien toma una de ellas justo antes, la página avisa cuál fue, la quita y deja las demás elegidas.
+- El máximo de 3 cuenta las fichas que la persona ya tiene.
 - Un turno se cierra cuando empieza: el AM a las 00:00 y el PM a las 12:00, hora de Chile. Los días que ya pasaron aparecen cerrados.
 - Cada persona se identifica con su nombre y los últimos 4 dígitos del celular. Las tildes y mayúsculas no cuentan.
 
@@ -92,6 +96,13 @@ Solo participan las fichas **pagadas**.
 - Al apostar suena una tragamonedas mientras se registra la ficha, y un premio cuando queda lista.
 - En iPhone con el modo silencio activado no suena nada.
 - Todo el sonido se genera en el navegador y no usa archivos de audio.
+
+## Íconos en la pantalla de inicio
+
+BabyBet y la Caja tienen ícono y nombre propios ("BabyBet" y "Caja"). Desde el ícono se abren a pantalla completa, como una app.
+
+- Si ya habías agregado un acceso con el ícono antiguo, bórralo y vuelve a agregarlo desde Safari con **Compartir › Agregar a pantalla de inicio**. Safari guarda el ícono anterior.
+- La caja abierta desde el ícono pide el PIN una vez, porque guarda sus datos aparte de Safari.
 
 ## Problemas comunes
 

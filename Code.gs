@@ -39,8 +39,8 @@ var ANCHO_RESULTADO = 8;
 // No cambies los textos de la columna A de Config: el código los busca por nombre.
 var CONFIG_INICIAL = [
   ['Apuestas abiertas', true, 'Desmárcala para cerrar la mesa.'],
-  ['Valor ficha', 3000, 'En pesos.'],
-  ['Máx. fichas por jugador', 5, '0 = sin límite.'],
+  ['Valor ficha', 5000, 'En pesos.'],
+  ['Máx. fichas por jugador', 3, '0 = sin límite.'],
   ['Fecha desde', '2026-11-01', 'Formato AAAA-MM-DD. Los turnos que ya empezaron se cierran solos.'],
   ['Fecha hasta', '2027-01-31', 'Formato AAAA-MM-DD.'],
   ['% para el ganador', 40, 'Porcentaje del pozo que se lleva quien gane la fecha.'],
@@ -50,12 +50,12 @@ var CONFIG_INICIAL = [
 ];
 var CONFIG_TEXTO = ['Fecha desde', 'Fecha hasta', 'Nacimiento: fecha', 'Nacimiento: hora', 'PIN administrador'];
 
-// Valores de la versión anterior que configurar() actualiza solos, pero solo si nadie los cambió.
+// Valores de versiones anteriores que configurar() actualiza solos, pero solo si nadie los cambió.
 var CONFIG_ANTERIOR = {
-  'Valor ficha': [5000, 3000],
-  'Máx. fichas por jugador': [3, 5],
-  'Fecha desde': ['2026-12-01', '2026-11-01'],
-  'Fecha hasta': ['2027-01-15', '2027-01-31']
+  'Valor ficha': { de: ['3000'], a: 5000 },
+  'Máx. fichas por jugador': { de: ['5'], a: 3 },
+  'Fecha desde': { de: ['2026-12-01'], a: '2026-11-01' },
+  'Fecha hasta': { de: ['2027-01-15'], a: '2027-01-31' }
 };
 
 var DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -84,8 +84,8 @@ function configurar() {
       var ant = CONFIG_ANTERIOR[clave];
       if (ant) {
         var celda = cfg.getRange(filas[clave], 2);
-        if (valorTexto_(celda.getValue()) === String(ant[0])) {
-          celda.setValue(typeof ant[1] === 'string' ? "'" + ant[1] : ant[1]);
+        if (ant.de.indexOf(valorTexto_(celda.getValue())) !== -1) {
+          celda.setValue(typeof ant.a === 'string' ? "'" + ant.a : ant.a);
           cfg.getRange(filas[clave], 3).setValue(fila[2]);
         }
       }
@@ -199,6 +199,8 @@ function jugador_(d) {
   return estado_(id.clave);
 }
 
+// Una apuesta puede traer varias fichas ({ fichas: [{fecha, turno}, ...] }) y/o el nombre.
+// Las fichas se registran todas o ninguna.
 function apostar_(d) {
   var cfg = leerConfig_();
   if (!cfg.abierto) return error_('La mesa está cerrada. Ya no se reciben apuestas.', 'cerrada', { tablero: tablero_() });
@@ -206,43 +208,63 @@ function apostar_(d) {
   var id = identidad_(d);
   if (id.error) return error_(id.error);
 
-  var fecha = d.fecha ? String(d.fecha).trim() : '';
-  var turno = String(d.turno || '').trim().toUpperCase();
   var nombreBebe = limpiar_(d.nombreBebe, 40);
-  if (!fecha && !nombreBebe) return error_('No hay nada que apostar todavía.');
+  var pedidas = pedidas_(d);
+  if (pedidas.error) return error_(pedidas.error);
+  if (!pedidas.length && !nombreBebe) return error_('No hay nada que apostar todavía.');
 
   var fichas = leerFichas_();
+  var una = pedidas.length === 1;
 
-  if (fecha) {
-    if (!fechaValida_(fecha) || fecha < cfg.desde || fecha > cfg.hasta) return error_('Esa fecha está fuera del tablero.');
-    if (turno !== 'AM' && turno !== 'PM') return error_('Elige AM o PM.');
-    if (turnoEmpezo_(fecha, turno, ahora_())) {
-      return error_('Ese turno ya empezó. Elige uno que todavía no llegue.', 'pasada', { tablero: tablero_(fichas) });
+  if (pedidas.length) {
+    if (pedidas.some(function (p) { return !fechaValida_(p.fecha) || p.fecha < cfg.desde || p.fecha > cfg.hasta; })) {
+      return error_('Esa fecha está fuera del tablero.', 'fuera');
+    }
+    if (pedidas.some(function (p) { return p.turno !== 'AM' && p.turno !== 'PM'; })) return error_('Elige AM o PM.');
+
+    var ahora = ahora_();
+    var pasadas = pedidas.filter(function (p) { return turnoEmpezo_(p.fecha, p.turno, ahora); });
+    if (pasadas.length) {
+      return error_(una ? 'Ese turno ya empezó. Elige uno que todavía no llegue.' : 'Ya empezó: ' + etiquetas_(pasadas) + '. Quítalo y vuelve a apostar.',
+        'pasada', { pasadas: claves_(pasadas), tablero: tablero_(fichas) });
     }
 
     var mias = fichas.filter(function (f) { return f.clave === id.clave; }).length;
-    if (cfg.maxFichas > 0 && mias >= cfg.maxFichas) {
-      return error_('Ya tienes el máximo de ' + cfg.maxFichas + ' fichas.', 'max');
+    if (cfg.maxFichas > 0 && mias + pedidas.length > cfg.maxFichas) {
+      var quedan = Math.max(0, cfg.maxFichas - mias);
+      return error_(quedan ? 'Solo puedes apostar ' + quedan + (quedan === 1 ? ' ficha más' : ' fichas más') + ' (máximo ' + cfg.maxFichas + ').' : 'Ya tienes el máximo de ' + cfg.maxFichas + ' fichas.',
+        'max', { quedan: quedan });
     }
-    var tomada = fichas.some(function (f) { return f.fecha === fecha && f.turno === turno; });
-    if (tomada) return error_('Alguien tomó esa ficha hace un momento. Elige otra.', 'tomada', { tablero: tablero_(fichas) });
+
+    var ocupadas = {};
+    fichas.forEach(function (f) { ocupadas[f.fecha + '|' + f.turno] = true; });
+    var tomadas = pedidas.filter(function (p) { return ocupadas[p.fecha + '|' + p.turno]; });
+    if (tomadas.length) {
+      return error_(una ? 'Alguien tomó esa ficha hace un momento. Elige otra.' : 'Alguien tomó ' + etiquetas_(tomadas) + ' hace un momento. Elige otra.',
+        'tomada', { tomadasAhora: claves_(tomadas), tablero: tablero_(fichas) });
+    }
   }
 
   var yaTieneNombre = leerNombres_().some(function (n) { return n.clave === id.clave; });
-  if (!fecha && yaTieneNombre) return error_('Tu nombre ya estaba sellado. Se adivina una sola vez.', 'nombre');
+  if (!pedidas.length && yaTieneNombre) return error_('Tu nombre ya estaba sellado. Se adivina una sola vez.', 'nombre');
   var guardarNombre = !!nombreBebe && !yaTieneNombre;
 
-  var ficha = null;
-  if (fecha) {
+  var nuevas = [];
+  if (pedidas.length) {
     var props = PropertiesService.getScriptProperties();
-    var numero = Number(props.getProperty('contador') || 0) + 1;
+    var numero = Number(props.getProperty('contador') || 0);
+    var ahoraFecha = new Date();
+    var filas = pedidas.map(function (p) {
+      numero += 1;
+      nuevas.push({ numero: numero, fecha: p.fecha, turno: p.turno, pagada: false });
+      return [numero, ahoraFecha, texto_(id.jugador), "'" + id.cel, texto_(id.clave), "'" + p.fecha, p.turno];
+    });
     props.setProperty('contador', String(numero));
 
     var sh = hoja_(HOJAS.fichas);
     var fila = sh.getLastRow() + 1;
-    sh.getRange(fila, 1, 1, 7).setValues([[numero, new Date(), texto_(id.jugador), "'" + id.cel, texto_(id.clave), "'" + fecha, turno]]);
-    sh.getRange(fila, 8).insertCheckboxes();
-    ficha = { numero: numero, fecha: fecha, turno: turno, pagada: false };
+    sh.getRange(fila, 1, filas.length, 7).setValues(filas);
+    sh.getRange(fila, 8, filas.length, 1).insertCheckboxes();
   }
 
   if (guardarNombre) {
@@ -254,9 +276,37 @@ function apostar_(d) {
   }
 
   var estado = estado_(id.clave);
-  estado.ficha = ficha;
+  estado.fichasNuevas = nuevas;
+  estado.ficha = nuevas[0] || null;
   estado.nombreGuardado = guardarNombre;
   return estado;
+}
+
+function pedidas_(d) {
+  var lista = Array.isArray(d.fichas) ? d.fichas : (d.fecha ? [{ fecha: d.fecha, turno: d.turno }] : []);
+  if (lista.length > 20) return { error: 'Demasiadas fichas en una sola apuesta.' };
+  var vistas = {};
+  var out = [];
+  lista.forEach(function (p) {
+    var f = String((p && p.fecha) || '').trim();
+    var t = String((p && p.turno) || '').trim().toUpperCase();
+    if (!vistas[f + '|' + t]) { vistas[f + '|' + t] = true; out.push({ fecha: f, turno: t }); }
+  });
+  return out;
+}
+
+function claves_(lista) {
+  return lista.map(function (p) { return p.fecha + '|' + p.turno; });
+}
+
+// "sáb 26 dic PM y dom 27 dic AM"
+function etiquetas_(lista) {
+  var t = lista.map(function (p) {
+    var x = p.fecha.split('-');
+    var d = new Date(Date.UTC(+x[0], +x[1] - 1, +x[2]));
+    return DIAS[d.getUTCDay()].slice(0, 3) + ' ' + d.getUTCDate() + ' ' + MESES[d.getUTCMonth()].slice(0, 3) + ' ' + p.turno;
+  });
+  return t.length > 1 ? t.slice(0, -1).join(', ') + ' y ' + t[t.length - 1] : t[0];
 }
 
 function estado_(clave) {
@@ -286,7 +336,8 @@ function tablero_(fichas) {
     tomadas: fichas.map(function (f) { return f.fecha + '|' + f.turno; }),
     fichas: fichas.length,
     pagadas: pagadas,
-    pozo: pagadas * cfg.valor
+    pozo: pagadas * cfg.valor,
+    version: 3
   };
 }
 
